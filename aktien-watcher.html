@@ -91,6 +91,10 @@
   .legende .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .gvzeile { display: grid; grid-template-columns: 78px 1fr 58px; gap: 8px; align-items: center; font-size: 12.5px; padding: 3px 0; }
   .gvbalken { position: relative; height: 10px; background: #1b2230; border-radius: 4px; } .gvbalken i { position: absolute; top: 0; bottom: 0; border-radius: 3px; } .gvbalken b { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--grau); }
+  .alarm { margin-top: 6px; padding: 7px 10px; border-radius: 8px; font-size: 12.5px; border: 1px solid var(--warn); color: var(--warn); background: rgba(212,162,78,.08); }
+  .alarm.rot { border-color: var(--neg); color: var(--neg); background: rgba(224,96,90,.08); }
+  .typkopf { margin: 4px 0 10px; font-size: 12.5px; line-height: 1.45; }
+  table.journal td, table.journal th { text-align: center; padding: 6px 4px; } table.journal td:first-child, table.journal th:first-child { text-align: left; }
   .leer { text-align: center; color: var(--text-dim); padding: 28px 10px; font-size: 14px; }
 </style>
 </head>
@@ -109,12 +113,15 @@
   <!-- Übersicht -->
   <section class="register aktiv" id="r-uebersicht">
     <h2>Indizes</h2><div id="indizes"></div>
+    <div id="alarmeKurz"></div>
     <h2>Opportunitäten (Einzeltitel)</h2><div id="ampelsumme"></div>
     <h2>Depot</h2><div id="depotkurz"></div>
   </section>
 
   <!-- Kandidaten -->
   <section class="register" id="r-kandidaten">
+    <div class="chips" id="filterTyp"></div>
+    <div class="typkopf dim" id="typInfo"></div>
     <div class="chips" id="filterSort"></div>
     <div class="chips" id="filterAmpel"></div>
     <div class="chips" id="filterMarkt"></div>
@@ -138,7 +145,8 @@
     <h2>Was ist validiert – und was nicht?</h2>
     <div class="karte">
       <p><b>Index-Alarm (validiert, mit Einschränkungen):</b> Kauf von S&amp;P 500, SMI oder DAX nach einem Rückgang (Tag −2.5 %, Woche −4 %, Monat −8 %) war im Hold-out (ca. 2015–2026) in 18 von 18 Fällen besser als der Durchschnittstag. Trefferquote 62–91 %, Mehrertrag +0.5 bis +5.9 % nach 3 Monaten. Aber: nur 11–35 Ereignisse je Test, überwiegend Aufschwungphase, ca. 2–3 Signale pro Jahr und Index.</p>
-      <p><b>Einzeltitel (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel unten basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
+      <p><b>Stars (Kursteil prüfbar, Rest nicht):</b> Ob Titel nahe am Hoch mit starker relativer Stärke danach besser laufen, lässt sich mit den Kursdaten testen (<code>stars_backtest.py</code>, Bedienung wie die früheren Tests). Das Ergebnis liegt noch nicht vor. Wachstum, Gewinnschätzungen und Revisionen lassen sich gratis nicht rückwirkend testen; dafür sammelt das Journal den Beleg über die Zeit.</p>
+      <p><b>Einzeltitel-Einbrüche (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
       <p>Die Ampel ist eine strukturierte Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
     </div>
     <h2>Synchronisation</h2>
@@ -149,29 +157,56 @@
     </ul></div>
     <h2>Konto und Depot</h2>
     <div class="karte"><ul>
-      <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto: Mit «Einzahlen / Auszahlen» legst du die Einzahlung fest (einmalig). Der <b>Kontostand</b> sinkt mit jedem Kauf um den Einstand und wird <b>nicht</b> zum Depotwert addiert.</li>
-      <li>Beim <b>Ins-Depot-Legen</b> wird der Kaufbetrag (in CHF umgerechnet) vom Konto abgebucht, beim <b>Verkauf</b> wird der Erlös gutgeschrieben. Beides lässt sich im Dialog abschalten. Die Bewegungen stehen im Depot-Tab.</li>
-      <li><b>Einstand Depot</b> = Summe der gekauften Titel zum Kaufpreis. <b>Depotwert (IST)</b> = aktueller Marktwert derselben Titel. Gewinn/Verlust = Depotwert − Einstand.</li>
+      <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto. Mit «Einzahlen / Auszahlen» legst du die Einzahlungen fest.</li>
+      <li><b>Kontostand = Einzahlungen − Einstand Depot.</b> Jeder Kauf senkt ihn um den Einstand, jeder Verkauf erhöht ihn um den Erlös (der Gewinn oder Verlust aus dem Verkauf bleibt im Kontostand). Er wird nicht zum Depotwert addiert.</li>
+      <li><b>Einstand Depot</b> = Summe der gekauften Titel zum Kaufpreis. <b>Depotwert (IST)</b> = aktueller Marktwert derselben Titel. <b>Gewinn / Verlust</b> = Depotwert − Einstand. <b>Heutige Veränderung</b> = Tagesbewegung der Titel in CHF, dazu in Prozent vom Depotwert.</li>
+      <li>Titel, die du schon vorher hattest, setzt du mit dem Haken «bereits vorhanden» ein: Der Betrag wird dann zusätzlich als Einzahlung verbucht und der Kontostand bleibt unverändert.</li>
+      <li>«Verkauft / entfernen» ohne Preis schreibt den Einstand wieder gut (für Fehleingaben).</li>
     </ul></div>
-    <h2>Wie kommt die Liste zustande?</h2>
+    <h2>Drei Listen, drei Ideen</h2>
     <div class="karte"><ul>
-      <li><b>Universum:</b> alle Titel von SMI, DAX und S&amp;P 500 (rund 560).</li>
-      <li><b>Auslöser:</b> Der Kurs ist in den letzten 10 Handelstagen um ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen.</li>
-      <li><b>Auswahl:</b> Von den Titeln mit Auslöser werden die 150 mit dem stärksten Einbruch bewertet. Aus diesen zeigt die App die <b>60 mit dem höchsten Score</b>.</li>
-      <li><b>Ranking:</b> nach Score absteigend. Titel mit <b>roter</b> Ampel stehen immer am Ende, damit Warnzeichen nicht nach oben rutschen.</li>
+      <li><b>Universum:</b> SMI, DAX, MDAX, S&amp;P 500 und Nasdaq 100 (rund 650 Titel, Listen von Wikipedia, wöchentlich erneuert; eigene Titel über «zusatz_ticker» in der Config).</li>
+      <li><b>Einbrüche:</b> Kurs in den letzten 10 Handelstagen ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen. Die 150 stärksten Einbrüche werden bewertet, die 60 mit dem besten Score angezeigt.</li>
+      <li><b>Stars:</b> höchstens 10 % unter dem 52-Wochen-Hoch, über der 200-Tage-Linie und mit der 6-Monats-Rendite im obersten Fünftel des Universums. Die 100 stärksten werden bewertet, die 40 mit dem besten Score angezeigt.</li>
+      <li><b>Wachstum:</b> Umsatzwachstum (letztes Quartal gegenüber Vorjahr <i>und</i> Prognose) mindestens 10 % und Gewinnwachstum (bisher <i>und</i> Prognose) positiv, kein Kurs-Auslöser. Weil dafür Kennzahlen jedes Titels nötig sind, prüft der Scanner pro Lauf rund 80 Titel neu; nach wenigen Läufen ist das ganze Universum abgedeckt (Fortschritt auf der Übersicht). Angezeigt werden die 40 mit dem besten Score.</li>
+      <li>Ein Titel kann in mehreren Listen stehen («auch: Star»). <b>«Im Rücksetzer»</b> = Wachstumstitel mindestens 10 % unter dem Hoch oder im Einbruch-Scan: starkes Geschäft zum tieferen Kurs.</li>
+      <li><b>Ranking:</b> je Liste nach Score absteigend, Titel mit <b>roter</b> Ampel am Ende. Alle Schwellen sind in der Config änderbar.</li>
     </ul></div>
-    <h2>Die 10 Kriterien</h2>
+    <h2>Die Kriterien</h2>
     <div class="karte"><ul>
-      <li><b>Ursache des Einbruchs</b> (Markt oder Titel), <b>Umsatz-</b> und <b>Gewinnwachstum</b> (Prognose), <b>Betriebsmarge</b>, <b>Verschuldung &amp; Cashflow</b>, <b>Forward-KGV</b>, <b>Analysten</b> (Empfehlung, Kursziel), <b>Änderung der Gewinnschätzungen</b> (30 Tage), <b>Forschungsanteil</b> (Innovation), <b>Schlagzeilen</b> (Stichwortsuche).</li>
-      <li>Jedes Kriterium ist grün, gelb, rot oder grau (keine Daten, zählt nicht mit). Im Depot entfällt «Ursache des Einbruchs», dort gelten höchstens 9.</li>
-      <li><b>Ursache des Einbruchs:</b> Schlagzeilen der letzten Tage (Yahoo Finance und Google News, kostenlos) werden per Stichwort Themen zugeordnet, z. B. Klage/Schadenersatz, Kartell/Regulierung, Untersuchung, Gewinnwarnung, Analysten-Abstufung, Management, Rückruf, Zölle. Das ist eine Einordnung, <b>keine Zusammenfassung</b>: Den Inhalt musst du in der verlinkten Meldung lesen.</li>
-      <li><b>«x von y Kriterien erfüllt»</b> = Anzahl grüner Kriterien von den bewertbaren.</li>
+      <li>In allen Listen: <b>Umsatz-</b> und <b>Gewinnwachstum</b> (Prognose), <b>Betriebsmarge</b>, <b>Verschuldung &amp; Cashflow</b>, <b>Analysten</b> (Empfehlung, Kursziel), <b>Änderung der Gewinnschätzungen</b> (30 Tage), <b>Forschungsanteil</b>, <b>Schlagzeilen</b> (Stichwortsuche).</li>
+      <li>Nur bei Einbrüchen: <b>Ursache des Einbruchs</b> (Markt oder Titel, dazu Themen aus den Schlagzeilen) und <b>Forward-KGV</b>.</li>
+      <li>Nur bei Stars und Wachstum: <b>Relative Stärke</b> (6-Monats-Rendite im Vergleich zum Universum), <b>Trend</b> (200-Tage-Linie und Abstand zum Hoch) und <b>PEG</b> (Forward-KGV geteilt durch das erwartete Gewinnwachstum in %: ≤1.5 grün, ≤2.5 gelb, sonst rot). Es gibt also immer 9 bis 11 Kriterien, je nach Liste.</li>
+      <li>Jedes Kriterium ist grün, gelb, rot oder grau (keine Daten, zählt nicht mit). <b>«x von y Kriterien erfüllt»</b> = Anzahl grüner Kriterien von den bewertbaren.</li>
+      <li><b>Ursache des Einbruchs:</b> Schlagzeilen der letzten Tage (Yahoo Finance und Google News, kostenlos) werden per Stichwort Themen zugeordnet, z. B. Klage/Schadenersatz, Kartell/Regulierung, Untersuchung, Gewinnwarnung. Das ist eine Einordnung, <b>keine Zusammenfassung</b>: Den Inhalt musst du in der verlinkten Meldung lesen.</li>
     </ul></div>
     <h2>Score (0–100)</h2>
     <div class="karte"><ul>
-      <li>Gewichteter Durchschnitt: Grün zählt 1, Gelb ½, Rot 0, jeweils mal Gewicht. Fehlende Daten bleiben aussen vor, die übrigen Gewichte werden hochgerechnet.</li>
-      <li><b>Gewichte (Standard):</b> Gewinnwachstum 18, Umsatzwachstum 14, Schätzungsrevisionen 14, Bilanz 12, Betriebsmarge 10, Bewertung 10, Analysten 8, Ursache 8, Innovation 3, Nachrichten 3 (Summe 100).</li>
-      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in <code>aktien_watcher_config.json</code> unter «gewichte».</li>
+      <li>Gewichteter Durchschnitt: Grün zählt 1, Gelb ½, Rot 0, jeweils mal Gewicht. Fehlende Daten bleiben aussen vor, die übrigen Gewichte werden hochgerechnet. Jede Liste hat ihre <b>eigenen Gewichte</b>:</li>
+      <li><b>Einbrüche:</b> Gewinnwachstum 18, Umsatzwachstum 14, Schätzungsrevisionen 14, Bilanz 12, Marge 10, Bewertung 10, Analysten 8, Ursache 8, Innovation 3, Nachrichten 3.</li>
+      <li><b>Stars:</b> Schätzungsrevisionen 20, relative Stärke 18, Gewinnwachstum 14, Umsatzwachstum 10, Trend 10, PEG 10, Marge 5, Bilanz 5, Analysten 4, Innovation 2, Nachrichten 2.</li>
+      <li><b>Wachstum:</b> Schätzungsrevisionen 18, Gewinnwachstum 15, Umsatzwachstum 15, PEG 14, Marge 10, relative Stärke 8, Bilanz 6, Trend 5, Analysten 4, Innovation 3, Nachrichten 2.</li>
+      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in <code>aktien_watcher_config.json</code> unter «gewichte», «gewichte_stars» und «gewichte_wachstum».</li>
+    </ul></div>
+    <h2>Gesamtscore: ein Massstab für alle Listen</h2>
+    <div class="karte"><ul>
+      <li>Die Scores der drei Listen sind nicht direkt vergleichbar, weil jede Liste anders gewichtet. Für das gemeinsame Ranking («Alle») bekommt deshalb jeder Titel zusätzlich einen <b>Gesamtscore</b> mit <b>denselben Kriterien und Gewichten</b>.</li>
+      <li><b>Gewichte:</b> Schätzungsrevisionen 20, Gewinnwachstum 18, Umsatzwachstum 14, PEG 14, Bilanz 12, Marge 10, Analysten 8, Innovation 2, Nachrichten 2.</li>
+      <li><b>Bewusst nicht enthalten:</b> Kurssignale (Einbruch, Trend, relative Stärke) und die Ursache des Einbruchs. Sie legen fest, in welche Liste ein Titel kommt (Typ-Etikett). Würden sie im Score stehen, wären Stars und Einbrüche nicht fair vergleichbar: Ein gefallener Titel verlöre automatisch gegen einen steigenden.</li>
+      <li>Der Gesamtscore misst also die <b>Unternehmensqualität</b>, nicht die Kaufchance. Ein Titel mit hohem Gesamtscore und dem Etikett «Einbruch» ist ein gutes Unternehmen zum tieferen Kurs. Die Gewichte sind eine Annahme, <b>nicht belegt</b>; das Journal (Dashboard, Gruppe «Gesamtscore») zeigt mit der Zeit, ob sie etwas taugen. Anpassbar unter «gewichte_gesamt» in der Config.</li>
+    </ul></div>
+    <h2>Journal: der eigene Beleg</h2>
+    <div class="karte"><ul>
+      <li>Der Scanner hält jeden bewerteten Titel (auch die nicht angezeigten) mit Liste, Score, Ampel und Kurs fest, je Titel und Liste höchstens alle 30 Tage.</li>
+      <li>Nach 1, 3 und 6 Monaten wird verglichen, wie sich die Titel gegenüber dem Durchschnitt des Universums entwickelt haben, getrennt nach Score (≥ 70, 45–69, &lt; 45 oder rot). Das steht im Dashboard. Wirkt der Score, muss die Gruppe «≥ 70» dauerhaft klar besser abschneiden als die Gruppe «&lt; 45». Erste Ergebnisse gibt es nach rund einem Monat; aussagekräftig wird es ab etwa 30 Fällen je Feld und über verschiedene Marktphasen.</li>
+      <li>Grenzen: vor Kosten, keine Beta-Bereinigung (starke Titel sind oft Hochbeta), nur Titel des heutigen Universums.</li>
+    </ul></div>
+    <h2>Depot-Alarme</h2>
+    <div class="karte"><ul>
+      <li><b>Rückgang vom Höchststand:</b> Der Kurs liegt mindestens 8 % unter dem Höchststand seit Kauf, und der Titel stand zwischenzeitlich mindestens 3 % im Plus («Welle zu Ende reiten, dann sichern»).</li>
+      <li><b>Verlust:</b> mindestens 10 % unter dem Einstand.</li>
+      <li><b>Ampel verschlechtert</b> gegenüber dem Kauf oder <b>Score um mindestens 15 Punkte gesunken.</b> Verglichen wird mit der Bewertung im Profil, in dem du den Titel gekauft hast.</li>
+      <li>Der Höchststand wird aus dem Kursverlauf seit Kauf (höchstens 60 Handelstage) und dann fortlaufend bei jedem Abgleich gemerkt. Die Schwellen sind in der Config änderbar. Alarme sind Hinweise zum Nachschauen, keine Verkaufsaufträge.</li>
     </ul></div>
     <h2>Ampel</h2>
     <div class="karte"><ul>
@@ -220,8 +255,38 @@
 <script>
 "use strict";
 // 2026-10-14: Aktien-Watcher-App, liest /api/daten vom lokalen Server (aktien_watcher.py)
-let D = {index: [], kandidaten: [], positionen: [], konto: {}, status: {}};
-let fAmpel = "alle", fMarkt = "alle", offen = new Set(), editTicker = null;
+let D = {index: [], kandidaten: [], stars: [], wachstum: [], positionen: [], konto: {}, status: {}};
+let fAmpel = "alle", fMarkt = "alle", fTyp = "alle", offen = new Set(), editTicker = null;
+const LISTEN = {einbruch: "kandidaten", stars: "stars", wachstum: "wachstum"};
+const TYP_KEY = {"Einbruch": "einbruch", "Star": "stars", "Wachstum": "wachstum"};
+// «Alle»: ein Titel je Ticker, bewertet mit dem Gesamtscore (gleiche Kriterien und Gewichte fuer alle Listen), sortiert nach Gesamtscore
+function alleZusammen() {
+  const m = new Map();
+  for (const t of ["einbruch", "stars", "wachstum"]) for (const x of (D[LISTEN[t]] || [])) {
+    const e = m.get(x.ticker);
+    if (!e) m.set(x.ticker, Object.assign({}, x, {typen: [TYP_INFO[t].kurz], typ_key: t, ausloeser: (x.ausloeser || []).slice(), eigene: {[t]: x.score}}));
+    else { e.typen.push(TYP_INFO[t].kurz); e.ausloeser = e.ausloeser.concat(x.ausloeser || []); e.eigene[t] = x.score;
+           if (t === "einbruch") { e.ursachen = x.ursachen; e.ruecksetzer = e.ruecksetzer || true; } if (x.ruecksetzer) e.ruecksetzer = true; }
+  }
+  const out = [...m.values()].filter(x => x.kriterien_g && x.kriterien_g.length).map(x => {
+    const anw = x.kriterien_g.filter(k => k.status !== "grau"), g = anw.filter(k => k.status === "gruen").length, r = anw.filter(k => k.status === "rot").length;
+    return Object.assign(x, {score: x.score_g, ampel: x.ampel_g, kriterien: x.kriterien_g, erfuellt: g, bewertbar: anw.length, punkte: g + " von " + anw.length + " grün, " + r + " rot", auch_in: []});
+  });
+  out.sort((a, b) => (a.ampel === "rot") - (b.ampel === "rot") || (b.score ?? -1) - (a.score ?? -1));
+  return out;
+}
+const liste = t => t === "alle" ? alleZusammen() : (D[LISTEN[t]] || []);
+const alleKand = () => Object.keys(LISTEN).flatMap(t => liste(t).map(x => Object.assign({typ: t}, x)));
+const TYP_INFO = {
+  alle: {name: "Alle", kurz: "Alle", sort2: null,
+    text: "Alle Titel aus den drei Listen in einem Ranking. Der Gesamtscore bewertet jeden Titel mit denselben Kriterien und Gewichten (Umsatz, Gewinn, Schätzungsrevisionen, Wachstum im Verhältnis zur Bewertung, Bilanz, Marge, Analysten) und lässt Kurssignale bewusst weg. Die Kurssignale stecken im Typ-Etikett (Einbruch, Star, Wachstum). Gleiche Gewichtung ist eine Annahme, nicht belegt."},
+  einbruch: {name: "Einbrüche", kurz: "Einbruch", sort2: ["einbruch", "Stärkster Einbruch"],
+    text: "Qualitätstitel, die zuletzt stark gefallen sind (Tag −5 %, Woche −10 % oder Monat −20 %). Idee: gute Firma wird billiger und erholt sich. Für Einzeltitel nicht belegt."},
+  stars: {name: "Stars", kurz: "Star", sort2: ["hoch", "Nächster am Hoch"],
+    text: "Titel nahe am 52-Wochen-Hoch, über der 200-Tage-Linie und im stärksten Fünftel der letzten 6 Monate. Idee: Starke Trends laufen weiter (Momentum). Der Kursteil lässt sich testen (stars_backtest.py), der Wachstumsteil nicht."},
+  wachstum: {name: "Wachstum", kurz: "Wachstum", sort2: ["ruecksetzer", "Rücksetzer zuerst"],
+    text: "Firmen mit starkem Wachstum: Umsatz bisher und laut Prognose ≥ 10 %, Gewinnwachstum positiv. Kein Kurs-Auslöser. Teuer bezahltes Wachstum ist das Risiko; der Score gewichtet Schätzungsrevisionen und Wachstum im Verhältnis zur Bewertung."}
+};
 // 2026-10-14: zwei Betriebsarten. "lokal": Seite kommt von aktien_watcher.py (/api/...). "web": Seite liegt auf GitHub Pages, Daten aus JSONBin.
 let MODUS = null;
 const BIN_STANDARD = "6acfa6f8ac6210605a3142eb";   // Bin-ID ist nicht geheim (ohne Schlüssel nutzlos)
@@ -229,11 +294,21 @@ const lsGet = k => { try { return localStorage.getItem(k) || ""; } catch (e) { r
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const binId = () => lsGet("mb_bin") || BIN_STANDARD;
 const binKey = () => lsGet("mb_key");
-async function binLesen() {
+// Der Bin enthaelt die Kandidatenlisten gzip-komprimiert im Feld "z" (Base64). binLesenRoh = unveraendert (zum Zurueckschreiben des Depots),
+// binLesen = entpackt und zusammengefuehrt (zum Anzeigen).
+async function binLesenRoh() {
   const r = await fetch("https://api.jsonbin.io/v3/b/" + binId() + "/latest", {headers: {"X-Access-Key": binKey(), "X-Bin-Meta": "false"}, cache: "no-store"});
   if (!r.ok) throw new Error("JSONBin " + r.status);
   return await r.json();
 }
+async function entpacken(rec) {
+  if (!rec || !rec.z) return rec;
+  if (typeof DecompressionStream === "undefined") throw new Error("Dieser Browser kann die komprimierten Daten nicht lesen (bitte aktualisieren)");
+  const bin = Uint8Array.from(atob(rec.z), c => c.charCodeAt(0));
+  const obj = await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"))).json();
+  const out = Object.assign({}, rec, obj); delete out.z; return out;
+}
+async function binLesen() { return await entpacken(await binLesenRoh()); }
 async function binSchreiben(obj) {
   const r = await fetch("https://api.jsonbin.io/v3/b/" + binId(), {method: "PUT", headers: {"X-Access-Key": binKey(), "Content-Type": "application/json"}, body: JSON.stringify(obj)});
   if (!r.ok) throw new Error("JSONBin " + r.status);
@@ -292,7 +367,7 @@ async function laden() {
     let d;
     if (MODUS === "lokal") d = await (await fetch("/api/daten", {cache: "no-store"})).json();
     else d = await binLesen();
-    D = Object.assign({index: [], kandidaten: [], positionen: [], konto: {}, status: {}}, d);
+    D = Object.assign({index: [], kandidaten: [], stars: [], wachstum: [], positionen: [], konto: {}, status: {}}, d);
     zeichne();
   } catch (e) {
     $("#banner").innerHTML = MODUS === "web"
@@ -319,7 +394,7 @@ function zeichne() {
   if (D.gekuerzt) b += '<div class="banner">Hinweis: Liste wegen Grössenlimit gekürzt (schwächste Kandidaten ausgeblendet).</div>';
   if (!D.stand && !(D.status && D.status.laeuft)) b += '<div class="banner">Noch keine Daten. Der erste Scan startet automatisch oder mit «↻ Vollscan».</div>';
   $("#banner").innerHTML = b;
-  zeichneIndizes(); zeichneAmpelSumme(); zeichneDepotKurz(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); zeichneStatTab();
+  zeichneIndizes(); zeichneAlarmeKurz(); zeichneAmpelSumme(); zeichneDepotKurz(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); zeichneStatTab();
 }
 
 function zeichneIndizes() {
@@ -338,22 +413,42 @@ function zeichneIndizes() {
 }
 
 function zeichneAmpelSumme() {
-  const k = D.kandidaten || [], z = a => k.filter(x => x.ampel === a).length;
-  if (!k.length) { $("#ampelsumme").innerHTML = '<div class="leer">Aktuell keine Einbruch-Kandidaten.</div>'; return; }
-  const top = k.filter(x => x.ampel === "gruen").slice(0, 3).map(x =>
-    `<div class="zeile" style="padding:6px 0"><span><span class="punkt gruen"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span class="${kl(x.monat_pct)}">${pc(x.monat_pct)}</span></div>`).join("");
-  $("#ampelsumme").innerHTML = `<div class="kacheln" style="grid-template-columns:repeat(3,1fr)">
-    <div class="kachel"><span class="punkt gruen"></span> Grün<div class="w">${z("gruen")}</div></div>
-    <div class="kachel"><span class="punkt gelb"></span> Gelb<div class="w">${z("gelb")}</div></div>
-    <div class="kachel"><span class="punkt rot"></span> Rot<div class="w">${z("rot")}</div></div></div>
-    ${top ? '<div class="karte">' + top + '<div class="dim klein" style="margin-top:6px">Grün = Checkliste erfüllt, kein Kaufsignal. Details unter «Kandidaten».</div></div>' : ''}`;
+  const el = $("#ampelsumme");
+  let h = "", leer = true;
+  const top5 = liste("alle").filter(x => x.ampel !== "rot").slice(0, 5);
+  if (top5.length) h += `<div class="karte"><div class="zeile"><span><b>Gesamtranking</b> <span class="dim klein">gleicher Massstab für alle Listen</span></span></div><div style="margin-top:6px">${top5.map((x, i) =>
+    `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="dim klein">#${i + 1}</span> <span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span> ${x.typen.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>`).join("")}</div>
+    <div class="aktionen" style="margin-top:8px"><button class="knopf sek" data-gehe="alle">Gesamtranking ansehen</button></div></div>`;
+  for (const t of Object.keys(LISTEN)) {
+    const k = liste(t), z = a => k.filter(x => x.ampel === a).length;
+    if (k.length) leer = false;
+    const top = k.filter(x => x.ampel === "gruen").slice(0, 3).map(x =>
+      `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt gruen"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></span></div>`).join("");
+    h += `<div class="karte"><div class="zeile"><span><b>${TYP_INFO[t].name}</b> <span class="dim klein">${k.length} Titel</span></span>
+      <span class="klein"><span class="punkt gruen"></span> ${z("gruen")} &nbsp;<span class="punkt gelb"></span> ${z("gelb")} &nbsp;<span class="punkt rot"></span> ${z("rot")}</span></div>
+      ${top ? '<div style="margin-top:6px">' + top + '</div>' : '<div class="dim klein" style="margin-top:6px">' + (k.length ? "Kein Titel mit grüner Ampel." : "Aktuell keine Titel.") + '</div>'}
+      ${k.length ? `<div class="aktionen" style="margin-top:8px"><button class="knopf sek" data-gehe="${t}">Alle ${TYP_INFO[t].name} ansehen</button></div>` : ""}</div>`;
+  }
+  if (leer) { el.innerHTML = '<div class="leer">Aktuell keine Kandidaten.</div>'; return; }
+  const rs = liste("wachstum").filter(x => x.ruecksetzer && x.ampel !== "rot").slice(0, 3);
+  if (rs.length) h += `<div class="karte"><b>Wachstum im Rücksetzer</b><div class="dim klein" style="margin:2px 0 6px">Starkes Wachstum, Kurs mindestens 10 % unter dem Hoch oder im Einbruch-Scan.</div>${rs.map(x =>
+    `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span class="${kl(x.vom_hoch_pct)}">${pc(x.vom_hoch_pct)}</span></div>`).join("")}</div>`;
+  const ab = D.abdeckung;
+  h += `<div class="dim klein" style="margin:-2px 0 8px">Grün = Checkliste erfüllt, kein Kaufsignal. ${ab && ab.universum ? "Wachstums-Prüfung: " + ab.geprueft + " von " + ab.universum + " Titeln des Universums abgedeckt (wird bei jedem Scan vervollständigt)." : ""}</div>`;
+  el.innerHTML = h;
+}
+
+function zeichneAlarmeKurz() {
+  const a = (D.positionen || []).flatMap(p => (p.alarme || []).map(x => Object.assign({ticker: p.ticker}, x)));
+  $("#alarmeKurz").innerHTML = a.length ? '<h2>Depot-Alarme</h2><div class="karte">' + a.map(x => `<div class="alarm ${esc(x.stufe)}" style="margin:0 0 6px"><b>${esc(x.ticker)}</b>: ${esc(x.text)}</div>`).join("") + '</div>' : "";
 }
 
 function zeichneDepotKurz() {
-  const k = D.konto || {};
   if (!(D.positionen || []).length) { $("#depotkurz").innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
-  $("#depotkurz").innerHTML = `<div class="kacheln"><div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div></div>`;
+  const w = kontoWerte();
+  $("#depotkurz").innerHTML = `<div class="kacheln"><div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(w.wert)}</div></div>
+    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(w.gewinn)}">${chf(w.gewinn)}<div class="klein">${pc(w.gewinn_pct)}</div></div></div>
+    <div class="kachel" style="grid-column:1/-1"><span class="dim klein">Heutige Veränderung</span><div class="w ${kl(w.tag)}">${chf(w.tag)} <span class="klein">${pc(w.tag_pct)} vom Depotwert</span></div></div></div>`;
 }
 
 function ursachenBlock(x) {
@@ -366,32 +461,39 @@ function ursachenBlock(x) {
 }
 
 function zeichneKandidaten() {
-  const ampeln = ["alle", "gruen", "gelb", "rot"], maerkte = ["alle", ...new Set((D.kandidaten || []).map(x => x.markt))];
-  $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Score)"], ["einbruch", "Stärkster Einbruch"]].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
+  const T = TYP_INFO[fTyp], L = liste(fTyp);
+  $("#filterTyp").innerHTML = Object.keys(TYP_INFO).map(t => `<button class="chip ${fTyp === t ? "aktiv" : ""}" data-typ="${t}">${TYP_INFO[t].name} (${liste(t).length})</button>`).join("");
+  $("#typInfo").textContent = T.text;
+  if (fSort !== "rang" && !(T.sort2 && fSort === T.sort2[0])) fSort = "rang";
+  const ampeln = ["alle", "gruen", "gelb", "rot"], indizes = ["alle", ...new Set(L.flatMap(x => x.indizes && x.indizes.length ? x.indizes : [x.markt]))];
+  if (!indizes.includes(fMarkt)) fMarkt = "alle";
+  $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Score)"], ...(T.sort2 ? [T.sort2] : [])].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
   $("#filterAmpel").innerHTML = ampeln.map(a => `<button class="chip ${fAmpel === a ? "aktiv" : ""}" data-a="${a}">${a === "alle" ? "Alle" : ampelText[a]}</button>`).join("");
-  $("#filterMarkt").innerHTML = maerkte.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Märkte" : esc(m)}</button>`).join("");
-  const rang = {}; (D.kandidaten || []).forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Score sortiert (rote Ampel zuletzt)
-  let liste = (D.kandidaten || []).filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || x.markt === fMarkt));
-  if (fSort === "einbruch") liste = liste.slice().sort((a, b) => (a.monat_pct ?? 0) - (b.monat_pct ?? 0));
-  if (!liste.length) { $("#kandidatenliste").innerHTML = '<div class="leer">Keine Kandidaten für diesen Filter.</div>'; return; }
-  $("#kandidatenliste").innerHTML = liste.map(x => {
+  $("#filterMarkt").innerHTML = indizes.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Indizes" : esc(m)}</button>`).join("");
+  const rang = {}; L.forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Score sortiert (rote Ampel zuletzt)
+  let liste_ = L.filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || (x.indizes && x.indizes.length ? x.indizes.includes(fMarkt) : x.markt === fMarkt)));
+  if (fSort === "einbruch") liste_ = liste_.slice().sort((a, b) => (a.monat_pct ?? 0) - (b.monat_pct ?? 0));
+  if (fSort === "hoch") liste_ = liste_.slice().sort((a, b) => (b.vom_hoch_pct ?? -999) - (a.vom_hoch_pct ?? -999));
+  if (fSort === "ruecksetzer") liste_ = liste_.slice().sort((a, b) => (a.vom_hoch_pct ?? 999) - (b.vom_hoch_pct ?? 999));
+  if (!liste_.length) { $("#kandidatenliste").innerHTML = '<div class="leer">Keine Titel für diesen Filter.</div>'; return; }
+  $("#kandidatenliste").innerHTML = liste_.map(x => {
     const imDepot = (D.positionen || []).some(p => p.ticker === x.ticker);
     const kr = x.kriterien.map(k => `<div class="krit"><span class="punkt ${esc(k.status)}" style="margin-top:4px"></span><div class="t"><b>${esc(k.titel)}</b> · ${esc(k.wert)}<div class="dim">${esc(k.text)}</div></div></div>`).join("");
     const nw = (x.news || []).map(n => `<div>${/^https?:\/\//.test(n.link || "") ? `<a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.titel)}</a>` : esc(n.titel)} <span class="dim klein">${esc(n.quelle)} ${esc(n.zeit)}</span></div>`).join("");
-    return `<div class="karte ${offen.has(x.ticker) ? "offen" : ""}" data-t="${esc(x.ticker)}">
+    return `<div class="karte ${offen.has(fTyp + x.ticker) ? "offen" : ""}" data-t="${esc(fTyp + x.ticker)}">
       <div class="titel-zeile"><div style="display:flex;flex-direction:column;align-items:center;gap:5px"><span class="rang">#${rang[x.ticker]}</span><span class="punkt ${esc(x.ampel)}"></span></div>
         <div class="mitte"><div class="name">${esc(x.ticker)} <span class="dim" style="font-weight:400">${esc(x.name)}</span></div>
           <div class="zahlen"><span>${num(x.kurs)} ${esc(x.waehrung)}</span><span class="${kl(x.tag_pct)}">Tag ${pc(x.tag_pct)}</span><span class="${kl(x.woche_pct)}">Woche ${pc(x.woche_pct)}</span><span class="${kl(x.monat_pct)}">Monat ${pc(x.monat_pct)}</span></div>
-          <div class="zahlen" style="margin-top:3px"><span><b style="color:${scoreFarbe(x.score)}">Score ${x.score ?? "–"}</b></span><span>${x.erfuellt ?? "–"} von ${x.bewertbar ?? "–"} Kriterien erfüllt</span></div>${scoreBalken(x.score)}
-          <div style="margin-top:4px">${x.ausloeser.map(a => `<span class="tag">${esc(a.trigger)} · vor ${a.vor_tagen} Tg</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}${(x.ursachen || []).slice(0, 2).map(u => `<span class="tag" style="color:var(--warn)">⚑ ${esc(u.thema)}</span>`).join("")}</div></div>
+          <div class="zahlen" style="margin-top:3px"><span><b style="color:${scoreFarbe(x.score)}">${fTyp === "alle" ? "Gesamtscore" : "Score"} ${x.score ?? "–"}</b></span>${fTyp === "alle" && x.eigene ? '<span class="dim">' + Object.entries(x.eigene).map(([t, v]) => TYP_INFO[t].kurz + " " + v).join(" · ") + '</span>' : ''}<span>${x.erfuellt ?? "–"} von ${x.bewertbar ?? "–"} Kriterien erfüllt</span></div>${scoreBalken(x.score)}
+          <div style="margin-top:4px">${(x.ausloeser || []).map(a => `<span class="tag">${esc(a.trigger)}${a.vor_tagen != null ? " · vor " + a.vor_tagen + " Tg" : ""}</span>`).join("")}${(x.typen || []).map(t => `<span class="tag" style="color:var(--accent)">${esc(t)}</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}${x.ruecksetzer ? '<span class="tag" style="color:var(--warn)">im Rücksetzer</span>' : ''}${(x.auch_in || []).map(a => `<span class="tag" style="color:var(--accent)">auch: ${esc(a)}</span>`).join("")}${(x.ursachen || []).slice(0, 2).map(u => `<span class="tag" style="color:var(--warn)">⚑ ${esc(u.thema)}</span>`).join("")}</div></div>
         ${spark(x.verlauf)}</div>
       <div class="details">
-        <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc(x.markt)} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}</div>
+        <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc((x.indizes && x.indizes.length ? x.indizes.join(", ") : x.markt))} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}${x.rs_pct != null ? " · 6 Monate " + pc(x.rs_pct) : ""}</div>
         ${kursChart(x.verlauf)}
-        ${ursachenBlock(x)}
+        ${(fTyp === "einbruch" || (fTyp === "alle" && (x.typen || []).includes("Einbruch"))) ? ursachenBlock(x) : ""}
         ${kr}
         ${nw ? '<h2 style="margin:14px 0 4px;font-size:13px">Schlagzeilen</h2><div class="news">' + nw + '</div>' : ''}
-        <div class="aktionen"><button class="knopf" data-add="${esc(x.ticker)}">+ Ins Depot legen</button></div>
+        <div class="aktionen"><button class="knopf" data-add="${esc(x.ticker)}" data-typ2="${fTyp === "alle" ? x.typ_key : fTyp}">+ Ins Depot legen</button></div>
       </div></div>`;
   }).join("");
 }
@@ -406,24 +508,37 @@ function bewertungBlock(p) {
 }
 
 const EINZAHL_TYPEN = ["Einzahlung", "Auszahlung", "Korrektur"];
-function einzahlungInfo(k) {
-  const d = D.depot || {};
-  if (d.einzahlung_chf != null) return {v: d.einzahlung_chf, abgeleitet: false};
-  const bu = (d.buchungen || []).filter(x => EINZAHL_TYPEN.includes(x.typ));
-  if (bu.length) return {v: runde2(bu.reduce((a, x) => a + x.betrag, 0)), abgeleitet: false};
-  return {v: runde2((k.bargeld_chf || 0) + (k.einstand_chf || 0)), abgeleitet: true};   // Kontostand + Einstand der Titel
+// 2026-10-14: Kontomodell: Kontostand = Summe der Einzahlungen (+ realisierter Gewinn/Verlust aus Verkaeufen) - Einstand der Titel im Depot.
+function einstandChf(pos) { return runde2((pos || []).reduce((a, p) => a + p.stueck * p.einstand * fxw(p.waehrung || "CHF"), 0)); }
+function einzahlungVon(dep) {
+  if (dep.einzahlung_chf != null) return dep.einzahlung_chf;
+  const bu = (dep.buchungen || []).filter(x => EINZAHL_TYPEN.includes(x.typ));
+  if (bu.length) return runde2(bu.reduce((a, x) => a + x.betrag, 0));
+  return runde2((dep.bargeld_chf || 0) + einstandChf(dep.positionen));          // Altbestand: Konto + Einstand
 }
-// Einheitliche Kontoübersicht (Dashboard + Depot): Einzahlung → Kontostand, Einstand → Depotwert (IST)
-function kontoKacheln(k) {
-  const e = einzahlungInfo(k);
+function kontoWerte() {
+  const pos = D.positionen || [];
+  const dep = D.depot || {positionen: pos, bargeld_chf: (D.konto || {}).bargeld_chf || 0, buchungen: []};
+  const ein = einzahlungVon(dep), real = dep.realisiert_chf || 0, einstand = einstandChf(pos);
+  const mit = pos.filter(p => p.wert_chf != null);
+  const wert = runde2(mit.reduce((a, p) => a + p.wert_chf, 0));
+  const einstBew = mit.reduce((a, p) => a + p.stueck * p.einstand * fxw(p.waehrung || "CHF"), 0);
+  const gewinn = runde2(wert - einstBew);
+  const tag = runde2(mit.reduce((a, p) => { const t = (p.tag_pct || 0) / 100; return a + p.wert_chf * t / (1 + t); }, 0));
+  return {einzahlung: ein, realisiert: real, einstand, kontostand: runde2(ein + real - einstand), wert, gewinn,
+          gewinn_pct: einstBew ? gewinn / einstBew * 100 : 0, tag, tag_pct: wert ? tag / wert * 100 : 0};
+}
+// Einheitliche Kontouebersicht (Dashboard + Depot): Kontostand, Einstand, Depotwert (IST), Gewinn/Verlust, heutige Veraenderung
+function kontoKacheln() {
+  const w = kontoWerte();
+  const sub = "Einzahlungen " + chf(w.einzahlung) + (Math.abs(w.realisiert) >= 0.5 ? (w.realisiert > 0 ? " + " : " − ") + chf(Math.abs(w.realisiert)).replace(" CHF", "") + " realisiert" : "") + " − Einstand";
   return `<div class="kacheln">
-    <div class="kachel"><span class="dim klein">Einzahlung (einmalig)</span><div class="w">${chf(e.v)}</div><div class="klein dim">${e.abgeleitet ? "abgeleitet aus Konto + Einstand" : "gesamt eingezahlt"}</div></div>
-    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${(k.bargeld_chf || 0) < 0 ? "neg" : ""}">${chf(k.bargeld_chf)}</div><div class="klein dim">Einzahlung − Einstand der Titel</div></div>
-    <div class="kachel"><span class="dim klein">Einstand Depot</span><div class="w">${chf(k.einstand_chf)}</div><div class="klein dim">Summe der gekauften Titel</div></div>
-    <div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(k.wert_chf)}</div><div class="klein dim">aktueller Marktwert</div></div>
-    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
-    <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div></div>
-    <div class="dim klein" style="margin:-2px 0 10px">Kontostand und Depotwert werden nicht addiert: Der Kauf mindert den Kontostand um den Einstand, der Depotwert zeigt den heutigen Marktwert der Titel.</div>`;
+    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${w.kontostand < 0 ? "neg" : ""}">${chf(w.kontostand)}</div><div class="klein dim">${sub}</div></div>
+    <div class="kachel"><span class="dim klein">Einstand Depot</span><div class="w">${chf(w.einstand)}</div><div class="klein dim">Summe der gekauften Titel</div></div>
+    <div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(w.wert)}</div><div class="klein dim">aktueller Marktwert</div></div>
+    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(w.gewinn)}">${chf(w.gewinn)}<div class="klein">${pc(w.gewinn_pct)}</div></div></div>
+    <div class="kachel" style="grid-column:1/-1"><span class="dim klein">Heutige Veränderung</span><div class="w ${kl(w.tag)}">${chf(w.tag)} <span class="klein">${pc(w.tag_pct)} vom Depotwert</span></div></div></div>
+    <div class="dim klein" style="margin:-2px 0 10px">Kontostand = Einzahlungen − Einstand Depot. Kontostand und Depotwert werden nicht addiert.</div>`;
 }
 
 function buchungenKarte() {
@@ -435,15 +550,17 @@ function buchungenKarte() {
 
 function zeichneDepot() {
   const k = D.konto || {}, pos = D.positionen || [];
-  $("#konto").innerHTML = kontoKacheln(k) + `<div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
+  $("#konto").innerHTML = kontoKacheln() + `<div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
   if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen.</div>'; return; }
   $("#positionen").innerHTML = pos.map(p => {
-    const kand = (D.kandidaten || []).find(x => x.ticker === p.ticker);
+    const kand = alleKand().find(x => x.ticker === p.ticker);
     return `<div class="karte"><div class="titel-zeile" style="cursor:default"><div class="mitte">
       <div class="name">${kand ? `<span class="punkt ${esc(kand.ampel)}"></span> ` : ""}${esc(p.ticker)} <span class="dim" style="font-weight:400">${esc(p.name)}</span></div>
       <div class="zahlen"><span>${num(p.stueck, p.stueck % 1 ? 2 : 0)} Stk.</span><span>Einstand ${num(p.einstand)}</span><span>Kurs ${num(p.kurs)} ${esc(p.waehrung)}</span></div>
       <div class="zahlen"><span class="${kl(p.gewinn_pct)}"><b>${pc(p.gewinn_pct)}</b> seit Kauf (${num(p.gewinn)} ${esc(p.waehrung)})</span></div>
       <div class="zahlen dim"><span class="${kl(p.tag_pct)}">Tag ${pc(p.tag_pct)}</span><span class="${kl(p.woche_pct)}">Woche ${pc(p.woche_pct)}</span><span class="${kl(p.monat_pct)}">Monat ${pc(p.monat_pct)}</span></div>
+      ${p.hoch_seit_kauf ? `<div class="zahlen dim"><span>Höchststand seit Kauf ${num(p.hoch_seit_kauf)}</span>${p.rueckgang_hoch_pct > 0 ? `<span>aktuell ${num(p.rueckgang_hoch_pct, 1)} % darunter</span>` : ""}</div>` : ""}
+      ${(p.alarme || []).map(a => `<div class="alarm ${esc(a.stufe)}">⚠ ${esc(a.text)}</div>`).join("")}
       ${p.notiz ? `<div class="dim klein" style="margin-top:4px">📝 ${esc(p.notiz)}</div>` : ""}
       <div class="dim klein">seit ${esc(p.datum || "–")}</div></div>${spark(p.verlauf)}</div>
       ${kursChart(p.verlauf, p.einstand)}
@@ -461,14 +578,14 @@ function donut(teile) {
 
 function zeichneDashboard() {
   const k = D.konto || {}, pos = (D.positionen || []).filter(p => p.wert_chf != null), el = $("#dashboard");
-  if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
-  let h = kontoKacheln(k);
+  if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>' + journalKarte(); return; }
+  let h = kontoKacheln();
   // Wertentwicklung (heutiger Bestand, rueckgerechnet; Wechselkurs heute)
   const fx = k.fx || {}, serien = pos.filter(p => p.verlauf && p.verlauf.length > 2);
   if (serien.length) {
     const n = Math.min(...serien.map(p => p.verlauf.length)), v = [];
     for (let i = 0; i < n; i++) v.push(serien.reduce((a, p) => a + p.stueck * p.verlauf[p.verlauf.length - n + i] * (fx[p.waehrung] || 1), 0));
-    h += `<h2>Wertentwicklung (heutiger Bestand, ca.)</h2><div class="karte">${kursChart(v.map(x => Math.round(x)), k.einstand_chf)}<div class="dim klein">Rückgerechnet mit den heutigen Stückzahlen und Wechselkursen, in CHF. Gestrichelt: Einstandswert.</div></div>`;
+    h += `<h2>Wertentwicklung (heutiger Bestand, ca.)</h2><div class="karte">${kursChart(v.map(x => Math.round(x)), kontoWerte().einstand)}<div class="dim klein">Rückgerechnet mit den heutigen Stückzahlen und Wechselkursen, in CHF. Gestrichelt: Einstandswert.</div></div>`;
   }
   // Verteilung
   const teile = pos.slice().sort((a, b) => b.wert_chf - a.wert_chf).map((p, i) => ({n: p.ticker, v: p.wert_chf, f: FARBEN[i % FARBEN.length]}));
@@ -489,7 +606,23 @@ function zeichneDashboard() {
       <div class="kachel"><span class="punkt gruen"></span> Grün<div class="w">${z("gruen")}</div></div><div class="kachel"><span class="punkt gelb"></span> Gelb<div class="w">${z("gelb")}</div></div><div class="kachel"><span class="punkt rot"></span> Rot<div class="w">${z("rot")}</div></div></div>
       ${ver ? '<div class="karte"><div class="dim klein" style="margin-bottom:4px">Veränderung seit dem Kauf</div>' + ver + '</div>' : ""}`;
   }
-  el.innerHTML = h;
+  el.innerHTML = h + journalKarte();
+}
+
+// Journal: Hat der Score etwas gebracht? Mehrertrag gegenueber dem Durchschnitt aller Titel des Universums, vor Kosten.
+function journalKarte() {
+  const j = D.journal_stats;
+  const kopf = '<h2>Journal: Hat der Score etwas gebracht?</h2>';
+  if (!j || !j.eintraege) return kopf + '<div class="karte dim klein">Noch keine Einträge. Der Scanner hält jeden bewerteten Titel mit Score und Kurs fest. Erste Ergebnisse gibt es nach rund einem Monat.</div>';
+  const zelle = c => !c || !c.n ? '<span class="dim">–</span>' : `<span class="${kl(c.ex)}${c.n < 10 ? " dim" : ""}">${c.ex > 0 ? "+" : c.ex < 0 ? "−" : ""}${Math.abs(c.ex).toLocaleString("de-CH", {minimumFractionDigits: 1, maximumFractionDigits: 1})} %</span><div class="dim klein">n=${c.n} · ${c.treffer} %</div>`;
+  let rows = "";
+  for (const [t, tn] of [["gesamt", "Gesamtscore (alle Listen)"], ...Object.keys(LISTEN).map(x => [x, TYP_INFO[x].name])]) {
+    const tj = j.typen && j.typen[t]; if (!tj) continue;
+    rows += `<tr><td colspan="4" style="padding-top:10px"><b>${tn}</b> <span class="dim klein">${tj.eintraege} Einträge</span></td></tr>`;
+    for (const hn of ["1M", "3M", "6M"]) rows += `<tr><td class="dim">${hn.replace("M", " Mon.")}</td><td>${zelle(tj[hn] && tj[hn].hoch)}</td><td>${zelle(tj[hn] && tj[hn].mittel)}</td><td>${zelle(tj[hn] && tj[hn].tief)}</td></tr>`;
+  }
+  return kopf + `<div class="karte"><table class="mini journal"><tr><th></th><th>Score ≥ 70</th><th>45–69</th><th>&lt; 45 / rot</th></tr>${rows}</table>
+    <div class="dim klein" style="margin-top:8px">Mehrertrag gegenüber dem Durchschnitt aller Titel des Universums nach 1, 3 und 6 Monaten (vor Kosten), darunter Anzahl Fälle und Anteil mit Mehrertrag. Seit ${esc(j.seit || "–")}. Grau = weniger als 10 Fälle, noch nicht aussagekräftig. Wirkt der Score, liegt «Score ≥ 70» dauerhaft klar über «&lt; 45 / rot».</div></div>`;
 }
 
 function zeichneStatTab() {
@@ -508,17 +641,24 @@ function depotObjekt() {
   const roh = (D.depot && Array.isArray(D.depot.positionen)) ? D.depot.positionen : (D.positionen || []);
   const bar = D.depot && D.depot.bargeld_chf != null ? D.depot.bargeld_chf : ((D.konto || {}).bargeld_chf || 0);
   const bu = (D.depot && Array.isArray(D.depot.buchungen)) ? D.depot.buchungen : [];
-  return {bargeld_chf: bar, buchungen: bu, einzahlung_chf: (D.depot && D.depot.einzahlung_chf != null) ? D.depot.einzahlung_chf : null, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
+  const o = {bargeld_chf: bar, buchungen: bu, einzahlung_chf: (D.depot && D.depot.einzahlung_chf != null) ? D.depot.einzahlung_chf : null,
+             realisiert_chf: (D.depot && D.depot.realisiert_chf) || 0,
+             positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
+  if (o.einzahlung_chf == null && !bu.some(x => EINZAHL_TYPEN.includes(x.typ))) o.einzahlung_chf = einzahlungVon(o);   // Altbestand (Konto + Einstand) festschreiben
+  return o;
 }
+// Kontostand = Einzahlungen + realisiert - Einstand; das Feld bargeld_chf wird nur noch fuer aeltere Programmteile mitgefuehrt
+function kontoFestschreiben(o) { o.bargeld_chf = runde2(einzahlungVon(o) + (o.realisiert_chf || 0) - einstandChf(o.positionen)); }
 async function depotSpeichern(obj) {
   $("#banner").innerHTML = '<div class="banner">Speichere …</div>';
   try {
+    kontoFestschreiben(obj);
     if (MODUS === "lokal") {
       const r = await fetch("/api/depot", {method: "POST", body: JSON.stringify(obj)});
       if (!r.ok) throw new Error("Server " + r.status);
     } else {
-      const rec = await binLesen();                       // frisch lesen, damit Scanner-Daten nicht überschrieben werden
-      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, buchungen: (obj.buchungen || []).slice(0, 50), einzahlung_chf: obj.einzahlung_chf != null ? obj.einzahlung_chf : null, positionen: obj.positionen};
+      const rec = await binLesenRoh();                    // roh lesen (inkl. komprimierter Listen), damit Scanner-Daten nicht überschrieben werden
+      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, buchungen: (obj.buchungen || []).slice(0, 50), einzahlung_chf: obj.einzahlung_chf != null ? obj.einzahlung_chf : null, realisiert_chf: obj.realisiert_chf || 0, positionen: obj.positionen};
       const alt = {}; (rec.positionen || []).forEach(p => alt[p.ticker] = p);
       rec.positionen = obj.positionen.map(p => Object.assign({}, alt[p.ticker] || {}, p));   // neue Position sofort sichtbar, Kurs folgt beim nächsten Scan
       rec.konto = Object.assign(rec.konto || {}, {bargeld_chf: obj.bargeld_chf});
@@ -530,14 +670,13 @@ async function depotSpeichern(obj) {
 const fxw = w => { const f = (D.konto || {}).fx || {}; return w === "CHF" ? 1 : (f[w] || 1); };
 const runde2 = x => Math.round(x * 100) / 100;
 function buchen(o, typ, text, betrag) {
-  o.bargeld_chf = runde2((o.bargeld_chf || 0) + betrag);
-  if (EINZAHL_TYPEN.includes(typ)) o.einzahlung_chf = runde2((o.einzahlung_chf != null ? o.einzahlung_chf : einzahlungInfo(D.konto || {}).v) + betrag);
+  if (EINZAHL_TYPEN.includes(typ)) o.einzahlung_chf = runde2(einzahlungVon(o) + betrag);
   o.buchungen = [{datum: new Date().toISOString().slice(0, 10), typ, text, betrag: runde2(betrag)}].concat(o.buchungen || []).slice(0, 50);
 }
 function buchenHinweis() {
   const st = parseFloat($("#fStueck").value), ep = parseFloat($("#fEinstand").value), w = $("#fWaehrung").value.trim().toUpperCase() || "CHF";
   const b = st > 0 && ep > 0 ? st * ep * fxw(w) : null;
-  $("#fBuchenText").textContent = "Kaufbetrag " + (b == null ? "" : "(ca. " + chf(b) + ") ") + "vom Konto abbuchen (Kontostand " + chf((D.konto || {}).bargeld_chf) + ")";
+  $("#fBuchenText").textContent = "Titel waren schon vorhanden: " + (b == null ? "Betrag" : "ca. " + chf(b)) + " zusätzlich als Einzahlung verbuchen (der Kontostand bleibt dann unverändert). Sonst sinkt der Kontostand um den Einstand (aktuell " + chf(kontoWerte().kontostand) + ").";
 }
 ["fStueck", "fEinstand", "fWaehrung"].forEach(id => document.addEventListener("input", ev => { if (ev.target.id === id) buchenHinweis(); }));
 function dialogOeffnen(vor) {
@@ -548,7 +687,7 @@ function dialogOeffnen(vor) {
   $("#fName").value = vor.name || ""; $("#fStueck").value = vor.stueck || ""; $("#fEinstand").value = vor.einstand || "";
   $("#fWaehrung").value = vor.waehrung || ""; $("#fDatum").value = vor.datum || new Date().toISOString().slice(0, 10);
   $("#fNotiz").value = vor.notiz || "";
-  $("#fBuchen").checked = !editTicker;                   // neue Position: standardmässig vom Konto abbuchen; Korrektur: nicht
+  $("#fBuchen").checked = false;                         // Standard: Kauf mindert den Kontostand; Haken nur fuer bereits vorhandene Titel
   buchenHinweis();
   $("#dlgPos").showModal();
 }
@@ -558,14 +697,15 @@ $("#formPos").addEventListener("submit", ev => {
   const p = {ticker: $("#fTicker").value.trim().toUpperCase(), name: $("#fName").value.trim(), stueck: parseFloat($("#fStueck").value),
              einstand: parseFloat($("#fEinstand").value), datum: $("#fDatum").value, waehrung: $("#fWaehrung").value.trim().toUpperCase(), notiz: $("#fNotiz").value.trim()};
   if (!p.ticker || !(p.stueck > 0) || !(p.einstand > 0)) return;
-  if (pendingKauf) p.kauf = pendingKauf;                 // Bewertung zum Kaufzeitpunkt merken (Vergleich im Depot)
+  if (pendingKauf) p.kauf = pendingKauf;                 // Bewertung (Profil, Ampel, Score) zum Kaufzeitpunkt merken (Vergleich im Depot)
   const i = o.positionen.findIndex(x => x.ticker === p.ticker);
-  if ($("#fBuchen").checked) {
-    const b = p.stueck * p.einstand * fxw(p.waehrung || "CHF");
-    if (b > (o.bargeld_chf || 0) && !confirm("Der Kontostand (" + chf(o.bargeld_chf) + ") reicht für " + chf(b) + " nicht aus. Trotzdem kaufen? Das Konto wird dann negativ.")) return;
-    buchen(o, "Kauf", p.ticker + " " + p.stueck + " Stk.", -b);
-  }
+  const betrag = x => x.stueck * x.einstand * fxw(x.waehrung || "CHF");
+  const delta = betrag(p) - (i >= 0 ? betrag(o.positionen[i]) : 0);        // Mehr-Einstand durch diese Eingabe
   if (i >= 0) o.positionen[i] = Object.assign(o.positionen[i], p); else o.positionen.push(p);
+  if ($("#fBuchen").checked) buchen(o, delta >= 0 ? "Einzahlung" : "Auszahlung", p.ticker + " eingebracht", delta);
+  else if (Math.abs(delta) >= 0.005) buchen(o, i >= 0 ? "Anpassung" : "Kauf", p.ticker + " " + p.stueck + " Stk.", -delta);
+  kontoFestschreiben(o);
+  if (!$("#fBuchen").checked && delta > 0 && o.bargeld_chf < 0 && !confirm("Der Kontostand reicht nicht aus und wird negativ (" + chf(o.bargeld_chf) + "). Trotzdem speichern? Sonst vorher einzahlen.")) return;
   depotSpeichern(o);
 });
 
@@ -577,20 +717,25 @@ document.addEventListener("click", ev => {
   const nav = t.closest("nav button");
   if (nav) { document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b === nav));
     document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); $("#seite").scrollTo(0, 0); return; }
+  if (t.dataset.gehe) { fTyp = t.dataset.gehe; fAmpel = "alle"; fMarkt = "alle"; fSort = "rang"; zeichneKandidaten();
+    document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b.dataset.r === "kandidaten"));
+    document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-kandidaten")); $("#seite").scrollTo(0, 0); return; }
+  if (t.dataset.typ) { fTyp = t.dataset.typ; fAmpel = "alle"; fMarkt = "alle"; fSort = "rang"; zeichneKandidaten(); return; }
   if (t.dataset.s) { fSort = t.dataset.s; zeichneKandidaten(); return; }
   if (t.dataset.a) { fAmpel = t.dataset.a; zeichneKandidaten(); return; }
   if (t.dataset.m) { fMarkt = t.dataset.m; zeichneKandidaten(); return; }
-  if (t.dataset.add) { const x = D.kandidaten.find(k => k.ticker === t.dataset.add);
+  if (t.dataset.add) { const typ = t.dataset.typ2 || "einbruch", x = liste(typ).find(k => k.ticker === t.dataset.add); if (!x) return;
     dialogOeffnen({ticker: x.ticker, name: x.name, einstand: x.kurs, waehrung: x.waehrung,
-      kauf: {ampel: x.ampel, score: x.score, erfuellt: x.erfuellt, bewertbar: x.bewertbar, datum: new Date().toISOString().slice(0, 10)}}); return; }
+      kauf: {typ, ampel: x.ampel, score: x.score, erfuellt: x.erfuellt, bewertbar: x.bewertbar, datum: new Date().toISOString().slice(0, 10)}}); return; }
   if (t.dataset.edit) { const p = D.positionen.find(k => k.ticker === t.dataset.edit); dialogOeffnen(Object.assign({edit: true}, p)); return; }
   if (t.dataset.del) {
     const p = D.positionen.find(x => x.ticker === t.dataset.del); if (!p) return;
-    const v = prompt(p.ticker + " verkaufen / entfernen.\nVerkaufspreis je Stück in " + p.waehrung + " (aktuell " + num(p.kurs) + "). Der Erlös wird dem Konto gutgeschrieben.\nLeer lassen = nur entfernen, ohne Gutschrift.", p.kurs ?? "");
+    const v = prompt(p.ticker + " verkaufen / entfernen.\nVerkaufspreis je Stück in " + p.waehrung + " (aktuell " + num(p.kurs) + "). Der Erlös wird dem Konto gutgeschrieben.\nLeer lassen = nur entfernen: dann wird der Einstand dem Konto wieder gutgeschrieben (z. B. bei einer Fehleingabe).", p.kurs ?? "");
     if (v === null) return;
     const preis = parseFloat(String(v).replace(/'/g, "").replace(",", "."));
-    const o = depotObjekt(); o.positionen = o.positionen.filter(x => x.ticker !== p.ticker);
-    if (preis > 0) buchen(o, "Verkauf", p.ticker + " " + p.stueck + " Stk. à " + num(preis), p.stueck * preis * fxw(p.waehrung));
+    const o = depotObjekt(), kosten = p.stueck * p.einstand * fxw(p.waehrung || "CHF"); o.positionen = o.positionen.filter(x => x.ticker !== p.ticker);
+    if (preis > 0) { const erloes = p.stueck * preis * fxw(p.waehrung || "CHF"); o.realisiert_chf = runde2((o.realisiert_chf || 0) + erloes - kosten); buchen(o, "Verkauf", p.ticker + " " + p.stueck + " Stk. à " + num(preis) + " (" + (erloes - kosten >= 0 ? "+" : "−") + chf(Math.abs(erloes - kosten)).replace(" CHF", "") + ")", erloes); }
+    else buchen(o, "Entfernt", p.ticker + " ohne Verkauf", kosten);
     depotSpeichern(o); return; }
   const kopf = t.closest(".titel-zeile");
   if (kopf && kopf.closest(".karte[data-t]")) { const k = kopf.closest(".karte"); const id = k.dataset.t; offen.has(id) ? offen.delete(id) : offen.add(id); k.classList.toggle("offen"); }
@@ -611,16 +756,16 @@ $("#btnImport").onclick = () => $("#fileImport").click();
 $("#fileImport").onchange = async ev => {
   const f = ev.target.files[0]; if (!f) return;
   try { const o = JSON.parse(await f.text()); if (!Array.isArray(o.positionen)) throw new Error("Format");
-    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, buchungen: o.buchungen || [], einzahlung_chf: o.einzahlung_chf != null ? o.einzahlung_chf : null, positionen: o.positionen});
+    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, buchungen: o.buchungen || [], einzahlung_chf: o.einzahlung_chf != null ? o.einzahlung_chf : null, realisiert_chf: o.realisiert_chf || 0, positionen: o.positionen});
   } catch (e) { alert("Datei nicht lesbar: " + e.message); }
   ev.target.value = "";
 };
 $("#btnNeuePos").onclick = () => dialogOeffnen({});
 $("#btnBargeld").onclick = () => {
-  const v = prompt("Konto (CHF), aktuell " + chf((D.konto || {}).bargeld_chf) + ".\nBetrag eingeben: positiv = Einzahlung, negativ = Auszahlung.\nMit = davor den Kontostand direkt setzen (z. B. =5000).", "");
+  const v = prompt("Kontostand (CHF), aktuell " + chf(kontoWerte().kontostand) + ".\nBetrag eingeben: positiv = Einzahlung, negativ = Auszahlung.\nMit = davor den Kontostand direkt setzen (z. B. =5000).", "");
   if (v === null || String(v).trim() === "") return;
   const s = String(v).trim().replace(/'/g, "").replace(",", "."), o = depotObjekt();
-  if (s.startsWith("=")) { const n = parseFloat(s.slice(1)); if (isNaN(n)) return; buchen(o, "Korrektur", "Kontostand gesetzt", n - (o.bargeld_chf || 0)); }
+  if (s.startsWith("=")) { const n = parseFloat(s.slice(1)); if (isNaN(n)) return; kontoFestschreiben(o); buchen(o, "Korrektur", "Kontostand gesetzt", n - o.bargeld_chf); }
   else { const n = parseFloat(s); if (isNaN(n) || n === 0) return; buchen(o, n > 0 ? "Einzahlung" : "Auszahlung", "", n); }
   depotSpeichern(o); };
 // 2026-10-14: Sync auf Abruf. Web-Modus: Signal 'sync' an den PC (Kanal-Name steht im Bin), dann den Bin kurz beobachten, bis neue Daten da sind.
@@ -643,8 +788,8 @@ async function neuLaden() {
     if (!r.ok) throw new Error("Signal " + r.status);
     for (let i = 0; i < 16; i++) {
       await new Promise(res => setTimeout(res, 6000));
-      const d = await binLesen();
-      if (stempel(d) !== vorher) { D = Object.assign({index: [], kandidaten: [], positionen: [], konto: {}, status: {}}, d); zeichne(); return; }
+      const d = await binLesenRoh();
+      if (stempel(d) !== vorher) { D = Object.assign({index: [], kandidaten: [], stars: [], wachstum: [], positionen: [], konto: {}, status: {}}, await entpacken(d)); zeichne(); return; }
       if (d.status && d.status.laeuft) meldung("⏳ Vollscan läuft beim PC, Daten folgen automatisch …");
     }
     meldung("Der PC hat nicht geantwortet. Läuft der Scanner (Aktien-Watcher_starten.bat)? Die Daten folgen sonst beim nächsten regulären Abgleich.");
