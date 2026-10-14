@@ -2,7 +2,7 @@
 <html lang="de-CH">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Aktien-Watcher</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -19,6 +19,7 @@
     --text: #e7e6e2; --text-dim: #8b93a3; --accent: #d4a24e;
     --pos: #4caf7d; --neg: #e0605a; --warn: #d4a24e; --grau: #5c6575;
   }
+  html { -webkit-text-size-adjust: 100%; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-variant-numeric: tabular-nums; }
@@ -26,7 +27,7 @@
      (iOS verschiebt fixed-Elemente, wenn die Safari-Leiste ein-/ausblendet). */
   html, body { height: 100%; overflow: hidden; }
   body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
-  #seite { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  #seite { flex: 1 1 auto; min-height: 0; min-width: 0; width: 100%; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
   main { max-width: 720px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px 28px; }
   h1 { font-size: 20px; margin: 0; font-weight: 600; }
   h2 { font-size: 15px; margin: 22px 0 10px; font-weight: 600; color: var(--text); }
