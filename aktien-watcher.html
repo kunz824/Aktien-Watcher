@@ -135,19 +135,30 @@
       <p><b>Einzeltitel (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel unten basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
       <p>Die Ampel ist eine strukturierte Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
     </div>
-    <h2>So entsteht die Ampel</h2>
+    <h2>Wie kommt die Liste zustande?</h2>
     <div class="karte"><ul>
-      <li><b>Auslöser:</b> Kurs ist in den letzten 10 Handelstagen um ≥5 % (Tag), ≥10 % (Woche) oder ≥20 % (Monat) gefallen.</li>
-      <li><b>Kriterien (je grün/gelb/rot/grau):</b> Ursache (Markt vs. Titel), Umsatz- und Gewinnwachstum (Prognose), Betriebsmarge, Verschuldung &amp; Cashflow, Forward-KGV, Analysten (Empfehlung, Kursziel), Änderung der Gewinnschätzungen, Forschungsanteil (Innovation), Schlagzeilen (Stichwortsuche).</li>
-      <li><b>Grün:</b> kein rotes Kriterium und mindestens 5 grün (mind. 60 % der bewertbaren). <b>Rot:</b> kritisches Kriterium rot (Bilanz, sinkende Schätzungen, Warn-Schlagzeile), Umsatz <i>und</i> Gewinn rot, oder zwei Rote. Sonst <b>gelb</b>.</li>
-      <li><b>Grenzen:</b> «Neue Produkte» und «Innovation» werden nur über Schlagzeilen-Stichwörter und den Forschungsanteil geschätzt – nicht inhaltlich gelesen. Daten von Yahoo Finance können Lücken oder Fehler haben. Lies die Schlagzeilen selbst.</li>
+      <li><b>Universum:</b> alle Titel von SMI, DAX und S&amp;P 500 (rund 560).</li>
+      <li><b>Auslöser:</b> Der Kurs ist in den letzten 10 Handelstagen um ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen.</li>
+      <li><b>Auswahl:</b> Von den Titeln mit Auslöser werden die 150 mit dem stärksten Einbruch bewertet. Aus diesen zeigt die App die <b>60 mit dem höchsten Score</b>.</li>
+      <li><b>Ranking:</b> nach Score absteigend. Titel mit <b>roter</b> Ampel stehen immer am Ende, damit Warnzeichen nicht nach oben rutschen.</li>
     </ul></div>
-    <h2>Score und Ranking</h2>
-    <div class="karte info"><ul>
-      <li><b>Kriterien erfüllt</b> = Anzahl der grünen Kriterien von den bewertbaren. Kriterien ohne Daten («k. A.») zählen nicht mit. Bei Kandidaten sind es bis zu 10, im Depot bis zu 9 (dort entfällt «Ursache des Einbruchs»).</li>
-      <li><b>Score (0–100)</b> = gewichteter Durchschnitt: Grün 1, Gelb ½, Rot 0. Die Ampel bleibt regelbasiert; der Score sortiert innerhalb einer Ampelfarbe das Ranking.</li>
-      <li><b>Gewichte (Standard):</b> Gewinnwachstum 18, Umsatzwachstum 14, Schätzungsrevisionen 14, Bilanz 12, Betriebsmarge 10, Bewertung 10, Analysten 8, Ursache 8, Innovation 3, Nachrichten 3.</li>
-      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Sie lassen sich in <code>aktien_watcher_config.json</code> unter «gewichte» ändern.</li>
+    <h2>Die 10 Kriterien</h2>
+    <div class="karte"><ul>
+      <li><b>Ursache des Einbruchs</b> (Markt oder Titel), <b>Umsatz-</b> und <b>Gewinnwachstum</b> (Prognose), <b>Betriebsmarge</b>, <b>Verschuldung &amp; Cashflow</b>, <b>Forward-KGV</b>, <b>Analysten</b> (Empfehlung, Kursziel), <b>Änderung der Gewinnschätzungen</b> (30 Tage), <b>Forschungsanteil</b> (Innovation), <b>Schlagzeilen</b> (Stichwortsuche).</li>
+      <li>Jedes Kriterium ist grün, gelb, rot oder grau (keine Daten, zählt nicht mit). Im Depot entfällt «Ursache des Einbruchs», dort gelten höchstens 9.</li>
+      <li><b>Ursache des Einbruchs:</b> Schlagzeilen der letzten Tage (Yahoo Finance und Google News, kostenlos) werden per Stichwort Themen zugeordnet, z. B. Klage/Schadenersatz, Kartell/Regulierung, Untersuchung, Gewinnwarnung, Analysten-Abstufung, Management, Rückruf, Zölle. Das ist eine Einordnung, <b>keine Zusammenfassung</b>: Den Inhalt musst du in der verlinkten Meldung lesen.</li>
+      <li><b>«x von y Kriterien erfüllt»</b> = Anzahl grüner Kriterien von den bewertbaren.</li>
+    </ul></div>
+    <h2>Score (0–100)</h2>
+    <div class="karte"><ul>
+      <li>Gewichteter Durchschnitt: Grün zählt 1, Gelb ½, Rot 0, jeweils mal Gewicht. Fehlende Daten bleiben aussen vor, die übrigen Gewichte werden hochgerechnet.</li>
+      <li><b>Gewichte (Standard):</b> Gewinnwachstum 18, Umsatzwachstum 14, Schätzungsrevisionen 14, Bilanz 12, Betriebsmarge 10, Bewertung 10, Analysten 8, Ursache 8, Innovation 3, Nachrichten 3 (Summe 100).</li>
+      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in <code>aktien_watcher_config.json</code> unter «gewichte».</li>
+    </ul></div>
+    <h2>Ampel</h2>
+    <div class="karte"><ul>
+      <li>Die Ampel ist regelbasiert und unabhängig vom Score. <b>Grün:</b> kein rotes Kriterium und mindestens 5 grüne (mind. 60 % der bewertbaren). <b>Rot:</b> ein kritisches Kriterium rot (Bilanz, sinkende Schätzungen, Warn-Schlagzeile), Umsatz <i>und</i> Gewinn rot, oder zwei rote Kriterien. Sonst <b>gelb</b>.</li>
+      <li><b>Grenzen:</b> «Neue Produkte» und «Innovation» werden nur über Schlagzeilen-Stichwörter und den Forschungsanteil geschätzt, nicht inhaltlich gelesen. Daten von Yahoo Finance können Lücken oder Fehler haben. Lies die Schlagzeilen selbst.</li>
     </ul></div>
     <h2>Index-Statistik (Backtest, Hold-out, 3 Monate nach Signal)</h2>
     <div class="karte"><table class="mini" id="statTab"></table>
@@ -325,12 +336,21 @@ function zeichneDepotKurz() {
     <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div></div>`;
 }
 
+function ursachenBlock(x) {
+  const u = x.ursachen || [];
+  const kopf = '<h2 style="margin:12px 0 6px;font-size:13px">Mögliche Ursachen laut Schlagzeilen</h2>';
+  if (!u.length) return kopf + '<div class="dim klein" style="margin-bottom:8px">Kein klarer Auslöser in den Schlagzeilen erkennbar (Marktumfeld, Zahlen oder Stimmung selbst prüfen).</div>';
+  return kopf + u.map(z => `<div style="padding:5px 0;font-size:13px"><b style="color:var(--warn)">⚑ ${esc(z.thema)}</b> <span class="dim klein">${z.n} Meldung${z.n > 1 ? "en" : ""}</span>
+    <div>${/^https?:\/\//.test(z.link || "") ? `<a href="${esc(z.link)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--grau)">${esc(z.titel)}</a>` : esc(z.titel)} <span class="dim klein">${esc(z.quelle || "")} ${esc(z.zeit || "")}</span></div></div>`).join("")
+    + '<div class="dim klein" style="margin:4px 0 8px">Automatische Stichwort-Zuordnung (Yahoo Finance + Google News), keine inhaltliche Zusammenfassung. Meldungen selbst lesen.</div>';
+}
+
 function zeichneKandidaten() {
   const ampeln = ["alle", "gruen", "gelb", "rot"], maerkte = ["alle", ...new Set((D.kandidaten || []).map(x => x.markt))];
-  $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Ampel + Score)"], ["einbruch", "Stärkster Einbruch"]].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
+  $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Score)"], ["einbruch", "Stärkster Einbruch"]].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
   $("#filterAmpel").innerHTML = ampeln.map(a => `<button class="chip ${fAmpel === a ? "aktiv" : ""}" data-a="${a}">${a === "alle" ? "Alle" : ampelText[a]}</button>`).join("");
   $("#filterMarkt").innerHTML = maerkte.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Märkte" : esc(m)}</button>`).join("");
-  const rang = {}; (D.kandidaten || []).forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Ampel, dann Score sortiert
+  const rang = {}; (D.kandidaten || []).forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Score sortiert (rote Ampel zuletzt)
   let liste = (D.kandidaten || []).filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || x.markt === fMarkt));
   if (fSort === "einbruch") liste = liste.slice().sort((a, b) => (a.monat_pct ?? 0) - (b.monat_pct ?? 0));
   if (!liste.length) { $("#kandidatenliste").innerHTML = '<div class="leer">Keine Kandidaten für diesen Filter.</div>'; return; }
@@ -343,11 +363,12 @@ function zeichneKandidaten() {
         <div class="mitte"><div class="name">${esc(x.ticker)} <span class="dim" style="font-weight:400">${esc(x.name)}</span></div>
           <div class="zahlen"><span>${num(x.kurs)} ${esc(x.waehrung)}</span><span class="${kl(x.tag_pct)}">Tag ${pc(x.tag_pct)}</span><span class="${kl(x.woche_pct)}">Woche ${pc(x.woche_pct)}</span><span class="${kl(x.monat_pct)}">Monat ${pc(x.monat_pct)}</span></div>
           <div class="zahlen" style="margin-top:3px"><span><b style="color:${scoreFarbe(x.score)}">Score ${x.score ?? "–"}</b></span><span>${x.erfuellt ?? "–"} von ${x.bewertbar ?? "–"} Kriterien erfüllt</span></div>${scoreBalken(x.score)}
-          <div style="margin-top:4px">${x.ausloeser.map(a => `<span class="tag">${esc(a.trigger)} · vor ${a.vor_tagen} Tg</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}</div></div>
+          <div style="margin-top:4px">${x.ausloeser.map(a => `<span class="tag">${esc(a.trigger)} · vor ${a.vor_tagen} Tg</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}${(x.ursachen || []).slice(0, 2).map(u => `<span class="tag" style="color:var(--warn)">⚑ ${esc(u.thema)}</span>`).join("")}</div></div>
         ${spark(x.verlauf)}</div>
       <div class="details">
         <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc(x.markt)} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}</div>
         ${kursChart(x.verlauf)}
+        ${ursachenBlock(x)}
         ${kr}
         ${nw ? '<h2 style="margin:14px 0 4px;font-size:13px">Schlagzeilen</h2><div class="news">' + nw + '</div>' : ''}
         <div class="aktionen"><button class="knopf" data-add="${esc(x.ticker)}">+ Ins Depot legen</button></div>
