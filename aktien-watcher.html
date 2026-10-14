@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aktien-Watcher</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#10141b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Aktien-Watcher">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  /* 2026-10-14: Design-Tokens aus der Tinu-Trading-App übernommen */
+  :root {
+    --bg: #10141b; --bg-panel: #171d27; --bg-hover: #1d2431; --border: #262f3d;
+    --text: #e7e6e2; --text-dim: #8b93a3; --accent: #d4a24e;
+    --pos: #4caf7d; --neg: #e0605a; --warn: #d4a24e; --grau: #5c6575;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-variant-numeric: tabular-nums; }
+  main { max-width: 720px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px 110px; }
+  h1 { font-size: 20px; margin: 0; font-weight: 600; }
+  h2 { font-size: 15px; margin: 22px 0 10px; font-weight: 600; color: var(--text); }
+  .dim { color: var(--text-dim); } .klein { font-size: 12px; }
+  .kopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .karte { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .banner { border-radius: 10px; padding: 10px 12px; margin: 12px 0; font-size: 13px; border: 1px solid var(--border); background: var(--bg-panel); }
+  .banner.demo { border-color: var(--warn); color: var(--warn); } .banner.fehler { border-color: var(--neg); color: var(--neg); }
+  .zeile { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .pos { color: var(--pos); } .neg { color: var(--neg); }
+  .kacheln { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
+  .kachel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+  .kachel .w { font-size: 20px; font-weight: 600; margin-top: 4px; }
+  .pille { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); }
+  .pille.ALARM { background: rgba(224,96,90,.15); color: var(--neg); border-color: var(--neg); }
+  .pille.beobachten { background: rgba(212,162,78,.15); color: var(--warn); border-color: var(--warn); }
+  .pille.ruhig { color: var(--text-dim); }
+  .punkt { display: inline-block; width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .punkt.gruen { background: var(--pos); box-shadow: 0 0 8px rgba(76,175,125,.7); } .punkt.gelb { background: var(--warn); }
+  .punkt.rot { background: var(--neg); } .punkt.grau { background: var(--grau); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 12px; }
+  .chip { border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-dim); padding: 6px 12px; border-radius: 99px; font-size: 13px; cursor: pointer; font: inherit; font-size: 13px; }
+  .chip.aktiv { background: #5a6272; color: #fff; border-color: #5a6272; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 6px; background: #222a38; color: var(--text-dim); margin: 2px 4px 0 0; }
+  .titel-zeile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .titel-zeile .mitte { flex: 1; min-width: 0; }
+  .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .zahlen { display: flex; gap: 12px; font-size: 12px; margin-top: 4px; flex-wrap: wrap; }
+  .details { display: none; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .karte.offen .details { display: block; }
+  .krit { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid #1d2431; align-items: flex-start; }
+  .krit:last-child { border-bottom: none; } .krit .t { flex: 1; font-size: 13px; } .krit .t b { font-weight: 600; }
+  .news a { color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--grau); }
+  .news div { padding: 5px 0; font-size: 13px; }
+  button.knopf { background: var(--accent); color: #1b1608; border: none; border-radius: 10px; padding: 9px 14px; font: inherit; font-weight: 600; cursor: pointer; font-size: 13px; }
+  button.knopf.sek { background: #2b3342; color: var(--text); font-weight: 500; }
+  button.knopf.gefahr { background: transparent; color: var(--neg); border: 1px solid #5a2f2d; }
+  button.knopf:disabled { opacity: .5; }
+  .aktionen { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  svg.spark { width: 90px; height: 28px; flex: none; }
+  .register { display: none; } .register.aktiv { display: block; }
+  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #2b2e34; display: flex; justify-content: space-around;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid #1f2227; z-index: 5; }
+  nav button { background: none; border: none; color: #8d9098; font: inherit; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 12px; cursor: pointer; border-radius: 10px; }
+  nav button .ic { font-size: 20px; filter: grayscale(1); opacity: .7; }
+  nav button.aktiv { color: var(--accent); } nav button.aktiv .ic { filter: none; opacity: 1; }
+  dialog { background: var(--bg-panel); color: var(--text); border: 1px solid var(--border); border-radius: 14px; padding: 18px; width: min(92vw, 420px); }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  label { display: block; font-size: 12px; color: var(--text-dim); margin: 10px 0 4px; }
+  input, textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 15px; }
+  .info p, .info li { font-size: 13.5px; line-height: 1.5; } .info ul { padding-left: 18px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12.5px; } table.mini td, table.mini th { padding: 5px 6px; border-bottom: 1px solid #1d2431; text-align: right; }
+  table.mini th:first-child, table.mini td:first-child { text-align: left; } table.mini th { color: var(--text-dim); font-weight: 500; }
+  .leer { text-align: center; color: var(--text-dim); padding: 28px 10px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kopf">
+    <div><h1>Aktien-Watcher</h1><div class="dim klein" id="stand">lädt …</div></div>
+    <div style="display:flex;gap:6px">
+      <button class="knopf sek" id="btnDepot">↻ Neu laden</button>
+      <button class="knopf sek" id="btnVoll">↻ Vollscan</button>
+      <button class="knopf sek" id="btnEinst" title="Einstellungen">⚙</button>
+    </div>
+  </div>
+  <div id="banner"></div>
+
+  <!-- Übersicht -->
+  <section class="register aktiv" id="r-uebersicht">
+    <h2>Indizes</h2><div id="indizes"></div>
+    <h2>Opportunitäten (Einzeltitel)</h2><div id="ampelsumme"></div>
+    <h2>Depot</h2><div id="depotkurz"></div>
+  </section>
+
+  <!-- Kandidaten -->
+  <section class="register" id="r-kandidaten">
+    <div class="chips" id="filterAmpel"></div>
+    <div class="chips" id="filterMarkt"></div>
+    <div id="kandidatenliste"></div>
+  </section>
+
+  <!-- Depot -->
+  <section class="register" id="r-depot">
+    <div id="konto"></div>
+    <div class="aktionen" style="margin:0 0 12px"><button class="knopf" id="btnNeuePos">+ Position hinzufügen</button><button class="knopf sek" id="btnBargeld">Bargeld ändern</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
+    <div id="positionen"></div>
+  </section>
+
+  <!-- Info -->
+  <section class="register info" id="r-info">
+    <h2>Was ist validiert – und was nicht?</h2>
+    <div class="karte">
+      <p><b>Index-Alarm (validiert, mit Einschränkungen):</b> Kauf von S&amp;P 500, SMI oder DAX nach einem Rückgang (Tag −2.5 %, Woche −4 %, Monat −8 %) war im Hold-out (ca. 2015–2026) in 18 von 18 Fällen besser als der Durchschnittstag. Trefferquote 62–91 %, Mehrertrag +0.5 bis +5.9 % nach 3 Monaten. Aber: nur 11–35 Ereignisse je Test, überwiegend Aufschwungphase, ca. 2–3 Signale pro Jahr und Index.</p>
+      <p><b>Einzeltitel (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel unten basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
+      <p>Die Ampel ist eine strukturierte Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
+    </div>
+    <h2>So entsteht die Ampel</h2>
+    <div class="karte"><ul>
+      <li><b>Auslöser:</b> Kurs ist in den letzten 10 Handelstagen um ≥5 % (Tag), ≥10 % (Woche) oder ≥20 % (Monat) gefallen.</li>
+      <li><b>Kriterien (je grün/gelb/rot/grau):</b> Ursache (Markt vs. Titel), Umsatz- und Gewinnwachstum (Prognose), Betriebsmarge, Verschuldung &amp; Cashflow, Forward-KGV, Analysten (Empfehlung, Kursziel), Änderung der Gewinnschätzungen, Forschungsanteil (Innovation), Schlagzeilen (Stichwortsuche).</li>
+      <li><b>Grün:</b> kein rotes Kriterium und mindestens 5 grün (mind. 60 % der bewertbaren). <b>Rot:</b> kritisches Kriterium rot (Bilanz, sinkende Schätzungen, Warn-Schlagzeile), Umsatz <i>und</i> Gewinn rot, oder zwei Rote. Sonst <b>gelb</b>.</li>
+      <li><b>Grenzen:</b> «Neue Produkte» und «Innovation» werden nur über Schlagzeilen-Stichwörter und den Forschungsanteil geschätzt – nicht inhaltlich gelesen. Daten von Yahoo Finance können Lücken oder Fehler haben. Lies die Schlagzeilen selbst.</li>
+    </ul></div>
+    <h2>Index-Statistik (Backtest, Hold-out, 3 Monate nach Signal)</h2>
+    <div class="karte"><table class="mini" id="statTab"></table>
+      <div class="dim klein" style="margin-top:8px">Trefferquote = Anteil positiver 3-Monats-Renditen nach Kosten. Vorsprung = Mehrertrag gegenüber dem Durchschnittstag. n = Anzahl Ereignisse.</div></div>
+  </section>
+</main>
+
+<nav>
+  <button data-r="uebersicht" class="aktiv"><span class="ic">📊</span>Übersicht</button>
+  <button data-r="kandidaten"><span class="ic">🚦</span>Kandidaten</button>
+  <button data-r="depot"><span class="ic">💼</span>Depot</button>
+  <button data-r="info"><span class="ic">ℹ️</span>Info</button>
+</nav>
+
+<dialog id="dlgPos">
+  <form method="dialog" id="formPos">
+    <h2 style="margin-top:0" id="dlgTitel">Position hinzufügen</h2>
+    <label>Kürzel (Yahoo, z. B. NESN.SW, SAP.DE, AAPL)</label><input id="fTicker" required autocapitalize="characters">
+    <label>Name (optional)</label><input id="fName">
+    <label>Stück</label><input id="fStueck" type="number" step="any" min="0" required inputmode="decimal">
+    <label>Einstandspreis (in Währung des Titels)</label><input id="fEinstand" type="number" step="any" min="0" required inputmode="decimal">
+    <label>Währung</label><input id="fWaehrung" maxlength="3" autocapitalize="characters">
+    <label>Datum</label><input id="fDatum" type="date">
+    <label>Notiz (z. B. Grund für den Kauf)</label><textarea id="fNotiz" rows="2"></textarea>
+    <div class="aktionen"><button class="knopf" value="ok">Speichern</button><button class="knopf sek" value="x" formnovalidate id="fAbbr">Abbrechen</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgEinst">
+  <form method="dialog" id="formEinst">
+    <h2 style="margin-top:0">Einstellungen (Web-App)</h2>
+    <p class="dim klein">Die Daten kommen von deinem PC über JSONBin. Bin-ID und Schlüssel werden nur in diesem Browser gespeichert, nicht im Code.</p>
+    <label>Bin-ID</label><input id="eBin" autocomplete="off" autocapitalize="off">
+    <label>Access-Key (Lesen + Schreiben)</label><input id="eKey" type="password" autocomplete="off" autocapitalize="off">
+    <div class="aktionen"><button class="knopf" value="ok">Speichern</button><button class="knopf sek" value="x" formnovalidate>Abbrechen</button></div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+// 2026-10-14: Aktien-Watcher-App, liest /api/daten vom lokalen Server (aktien_watcher.py)
+let D = {index: [], kandidaten: [], positionen: [], konto: {}, status: {}};
+let fAmpel = "alle", fMarkt = "alle", offen = new Set(), editTicker = null;
+// 2026-10-14: zwei Betriebsarten. "lokal": Seite kommt von aktien_watcher.py (/api/...). "web": Seite liegt auf GitHub Pages, Daten aus JSONBin.
+let MODUS = null;
+const BIN_STANDARD = "6acfa6f8ac6210605a3142eb";   // Bin-ID ist nicht geheim (ohne Schlüssel nutzlos)
+const lsGet = k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const binId = () => lsGet("mb_bin") || BIN_STANDARD;
+const binKey = () => lsGet("mb_key");
+async function binLesen() {
+  const r = await fetch("https://api.jsonbin.io/v3/b/" + binId() + "/latest", {headers: {"X-Access-Key": binKey(), "X-Bin-Meta": "false"}, cache: "no-store"});
+  if (!r.ok) throw new Error("JSONBin " + r.status);
+  return await r.json();
+}
+async function binSchreiben(obj) {
+  const r = await fetch("https://api.jsonbin.io/v3/b/" + binId(), {method: "PUT", headers: {"X-Access-Key": binKey(), "Content-Type": "application/json"}, body: JSON.stringify(obj)});
+  if (!r.ok) throw new Error("JSONBin " + r.status);
+}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = (x, d = 2) => x == null ? "–" : Number(x).toLocaleString("de-CH", {minimumFractionDigits: d, maximumFractionDigits: d});
+const pc = x => x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toLocaleString("de-CH", {minimumFractionDigits: 1, maximumFractionDigits: 1}) + " %";
+const kl = x => x == null ? "" : (x > 0 ? "pos" : x < 0 ? "neg" : "dim");
+const chf = x => x == null ? "–" : (x < 0 ? "−" : "") + Math.abs(x).toLocaleString("de-CH", {minimumFractionDigits: 0, maximumFractionDigits: 0}) + " CHF";
+const ampelText = {gruen: "Grün", gelb: "Gelb", rot: "Rot"};
+
+// 2026-10-14: Kursverlauf diskret: duenne, gedaempfte Linie, feine Flaeche, nur der letzte Punkt faerbt (gruen/rot)
+function spark(v, ref) {
+  if (!v || v.length < 3) return '<svg class="spark"></svg>';
+  const mn = Math.min(...v), mx = Math.max(...v), w = 90, h = 28, r = (mx - mn) || 1;
+  const X = i => i / (v.length - 1) * w, Y = y => h - 3 - (y - mn) / r * (h - 6);
+  const pts = v.map((y, i) => X(i).toFixed(1) + "," + Y(y).toFixed(1)).join(" ");
+  const f = v[v.length - 1] >= v[0] ? "var(--pos)" : "var(--neg)";
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}"><polygon points="0,${h} ${pts} ${w},${h}" fill="var(--text-dim)" opacity=".08"/>
+    <polyline points="${pts}" fill="none" stroke="var(--text-dim)" stroke-width="1.1" stroke-linejoin="round" opacity=".85"/>
+    <circle cx="${w}" cy="${Y(v[v.length - 1]).toFixed(1)}" r="2" fill="${f}"/></svg>`;
+}
+// Grosser, aber ebenso zurueckhaltender Verlauf fuer die Detailansicht (optional mit Einstandslinie)
+function kursChart(v, ref, tage) {
+  if (!v || v.length < 3) return "";
+  const w = 320, h = 70, p = 4;
+  let mn = Math.min(...v), mx = Math.max(...v);
+  if (ref != null) { mn = Math.min(mn, ref); mx = Math.max(mx, ref); }
+  const r = (mx - mn) || 1, X = i => p + i / (v.length - 1) * (w - 2 * p), Y = y => h - p - (y - mn) / r * (h - 2 * p);
+  const pts = v.map((y, i) => X(i).toFixed(1) + "," + Y(y).toFixed(1)).join(" ");
+  const f = v[v.length - 1] >= v[0] ? "var(--pos)" : "var(--neg)";
+  const refl = ref != null ? `<line x1="${p}" x2="${w - p}" y1="${Y(ref).toFixed(1)}" y2="${Y(ref).toFixed(1)}" stroke="var(--accent)" stroke-width=".8" stroke-dasharray="3 3" opacity=".7"/>` : "";
+  return `<div style="margin:10px 0 4px"><svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block">
+    <polygon points="${p},${h - p} ${pts} ${w - p},${h - p}" fill="var(--text-dim)" opacity=".07"/>${refl}
+    <polyline points="${pts}" fill="none" stroke="var(--text-dim)" stroke-width="1.2" stroke-linejoin="round"/>
+    <circle cx="${X(v.length - 1).toFixed(1)}" cy="${Y(v[v.length - 1]).toFixed(1)}" r="2.6" fill="${f}"/></svg>
+    <div class="zeile dim klein"><span>Tief ${num(Math.min(...v))}</span><span>${v.length} Tage${ref != null ? " · <span style=\"color:var(--accent)\">- - Einstand</span>" : ""}</span><span>Hoch ${num(Math.max(...v))}</span></div></div>`;
+}
+
+async function laden() {
+  try {
+    if (MODUS === null) {
+      try {
+        const t = await fetch("/api/status", {cache: "no-store"});
+        MODUS = t.ok && (t.headers.get("content-type") || "").includes("json") ? "lokal" : "web";
+      } catch (e) { MODUS = "web"; }
+      $("#btnVoll").style.display = MODUS === "web" ? "none" : "";
+      if (MODUS === "web" && !binKey()) { einstellungenOeffnen(); return; }
+    }
+    let d;
+    if (MODUS === "lokal") d = await (await fetch("/api/daten", {cache: "no-store"})).json();
+    else d = await binLesen();
+    D = Object.assign({index: [], kandidaten: [], positionen: [], konto: {}, status: {}}, d);
+    zeichne();
+  } catch (e) {
+    $("#banner").innerHTML = MODUS === "web"
+      ? '<div class="banner fehler">Daten nicht ladbar (' + esc(e.message) + '). Bin-ID/Schlüssel prüfen (⚙) oder prüfen, ob der Scanner schon einmal geschrieben hat.</div>'
+      : '<div class="banner fehler">Server nicht erreichbar. Läuft <code>aktien_watcher.py</code>?</div>';
+  }
+}
+
+function minutenSeit(s) {
+  if (!s) return null;
+  const t = new Date(String(s).replace(" ", "T"));
+  return isNaN(t) ? null : Math.round((Date.now() - t.getTime()) / 60000);
+}
+
+function zeichne() {
+  $("#stand").textContent = D.stand ? "Stand " + D.stand + (D.depot_stand ? " · Depot " + D.depot_stand.slice(11, 16) : "") : "noch keine Daten";
+  let b = "";
+  if (D.demo) b += '<div class="banner demo">Demo-Modus: Testdaten, keine echten Kurse.</div>';
+  if (D.status && D.status.laeuft) b += '<div class="banner">⏳ Vollscan läuft … (beim ersten Mal 10–20 Minuten)</div>';
+  if (D.status && D.status.fehler) b += '<div class="banner fehler">Fehler im Hintergrund: ' + esc(D.status.fehler) + '</div>';
+  const alter = minutenSeit(D.depot_stand || D.stand);
+  if (alter !== null && alter > 120) b += '<div class="banner fehler">Daten sind ' + (alter >= 1440 ? Math.round(alter / 1440) + " Tage" : Math.round(alter / 60) + " Std.") + ' alt. Läuft der Scanner auf dem PC?</div>';
+  if (D.gekuerzt) b += '<div class="banner">Hinweis: Liste wegen Grössenlimit gekürzt (schwächste Kandidaten ausgeblendet).</div>';
+  if (!D.stand && !(D.status && D.status.laeuft)) b += '<div class="banner">Noch keine Daten. Der erste Scan startet automatisch oder mit «↻ Vollscan».</div>';
+  $("#banner").innerHTML = b;
+  zeichneIndizes(); zeichneAmpelSumme(); zeichneDepotKurz(); zeichneKandidaten(); zeichneDepot(); zeichneStatTab();
+}
+
+function zeichneIndizes() {
+  const el = $("#indizes");
+  if (!D.index.length) { el.innerHTML = '<div class="leer">Keine Indexdaten.</div>'; return; }
+  el.innerHTML = D.index.map(i => {
+    const al = (i.ausgeloest || []).map(a => {
+      const s = a.stats;
+      const t = s ? `Historisch (Hold-out, ${s[2]} Fälle): nach solchen Rückgängen lag der Index nach 3 Monaten in ${Math.round(s[0] * 100)} % der Fälle höher, im Schnitt ${s[1] > 0 ? "+" : ""}${s[1].toFixed(1)} % über dem Durchschnitt.` : "";
+      return `<div style="margin-top:8px;font-size:13px"><b class="neg">Auslöser: ${esc(a.trigger)}</b><div class="dim">${esc(t)}</div></div>`;
+    }).join("");
+    return `<div class="karte"><div class="zeile"><div><b>${esc(i.name)}</b> <span class="pille ${esc(i.status)}">${esc(i.status)}</span>
+      <div class="zahlen"><span>${num(i.kurs, 0)}</span><span class="${kl(i.tag_pct)}">Tag ${pc(i.tag_pct)}</span><span class="${kl(i.woche_pct)}">Woche ${pc(i.woche_pct)}</span><span class="${kl(i.monat_pct)}">Monat ${pc(i.monat_pct)}</span></div>
+      <div class="dim klein">vom 52-W-Hoch ${pc(i.vom_hoch_pct)}</div></div>${spark(i.verlauf)}</div>${al}</div>`;
+  }).join("");
+}
+
+function zeichneAmpelSumme() {
+  const k = D.kandidaten || [], z = a => k.filter(x => x.ampel === a).length;
+  if (!k.length) { $("#ampelsumme").innerHTML = '<div class="leer">Aktuell keine Einbruch-Kandidaten.</div>'; return; }
+  const top = k.filter(x => x.ampel === "gruen").slice(0, 3).map(x =>
+    `<div class="zeile" style="padding:6px 0"><span><span class="punkt gruen"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span class="${kl(x.monat_pct)}">${pc(x.monat_pct)}</span></div>`).join("");
+  $("#ampelsumme").innerHTML = `<div class="kacheln" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kachel"><span class="punkt gruen"></span> Grün<div class="w">${z("gruen")}</div></div>
+    <div class="kachel"><span class="punkt gelb"></span> Gelb<div class="w">${z("gelb")}</div></div>
+    <div class="kachel"><span class="punkt rot"></span> Rot<div class="w">${z("rot")}</div></div></div>
+    ${top ? '<div class="karte">' + top + '<div class="dim klein" style="margin-top:6px">Grün = Checkliste erfüllt, kein Kaufsignal. Details unter «Kandidaten».</div></div>' : ''}`;
+}
+
+function zeichneDepotKurz() {
+  const k = D.konto || {};
+  if (!(D.positionen || []).length) { $("#depotkurz").innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
+  $("#depotkurz").innerHTML = `<div class="kacheln"><div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
+    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div></div>`;
+}
+
+function zeichneKandidaten() {
+  const ampeln = ["alle", "gruen", "gelb", "rot"], maerkte = ["alle", ...new Set((D.kandidaten || []).map(x => x.markt))];
+  $("#filterAmpel").innerHTML = ampeln.map(a => `<button class="chip ${fAmpel === a ? "aktiv" : ""}" data-a="${a}">${a === "alle" ? "Alle" : ampelText[a]}</button>`).join("");
+  $("#filterMarkt").innerHTML = maerkte.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Märkte" : esc(m)}</button>`).join("");
+  const liste = (D.kandidaten || []).filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || x.markt === fMarkt));
+  if (!liste.length) { $("#kandidatenliste").innerHTML = '<div class="leer">Keine Kandidaten für diesen Filter.</div>'; return; }
+  $("#kandidatenliste").innerHTML = liste.map(x => {
+    const imDepot = (D.positionen || []).some(p => p.ticker === x.ticker);
+    const kr = x.kriterien.map(k => `<div class="krit"><span class="punkt ${esc(k.status)}" style="margin-top:4px"></span><div class="t"><b>${esc(k.titel)}</b> · ${esc(k.wert)}<div class="dim">${esc(k.text)}</div></div></div>`).join("");
+    const nw = (x.news || []).map(n => `<div>${/^https?:\/\//.test(n.link || "") ? `<a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.titel)}</a>` : esc(n.titel)} <span class="dim klein">${esc(n.quelle)} ${esc(n.zeit)}</span></div>`).join("");
+    return `<div class="karte ${offen.has(x.ticker) ? "offen" : ""}" data-t="${esc(x.ticker)}">
+      <div class="titel-zeile"><span class="punkt ${esc(x.ampel)}"></span>
+        <div class="mitte"><div class="name">${esc(x.ticker)} <span class="dim" style="font-weight:400">${esc(x.name)}</span></div>
+          <div class="zahlen"><span>${num(x.kurs)} ${esc(x.waehrung)}</span><span class="${kl(x.tag_pct)}">Tag ${pc(x.tag_pct)}</span><span class="${kl(x.woche_pct)}">Woche ${pc(x.woche_pct)}</span><span class="${kl(x.monat_pct)}">Monat ${pc(x.monat_pct)}</span></div>
+          <div>${x.ausloeser.map(a => `<span class="tag">${esc(a.trigger)} · vor ${a.vor_tagen} Tg</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}</div></div>
+        ${spark(x.verlauf)}</div>
+      <div class="details">
+        <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc(x.markt)} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}</div>
+        ${kursChart(x.verlauf)}
+        ${kr}
+        ${nw ? '<h2 style="margin:14px 0 4px;font-size:13px">Schlagzeilen</h2><div class="news">' + nw + '</div>' : ''}
+        <div class="aktionen"><button class="knopf" data-add="${esc(x.ticker)}">+ Ins Depot legen</button></div>
+      </div></div>`;
+  }).join("");
+}
+
+function zeichneDepot() {
+  const k = D.konto || {}, pos = D.positionen || [];
+  $("#konto").innerHTML = `<div class="kacheln">
+    <div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
+    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
+    <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div>
+    <div class="kachel"><span class="dim klein">Bargeld / Gesamt</span><div class="w">${chf(k.bargeld_chf)}<div class="klein dim">${chf((k.wert_chf || 0) + (k.bargeld_chf || 0))}</div></div></div></div>
+    <div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>`;
+  if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen.</div>'; return; }
+  $("#positionen").innerHTML = pos.map(p => {
+    const kand = (D.kandidaten || []).find(x => x.ticker === p.ticker);
+    return `<div class="karte"><div class="titel-zeile" style="cursor:default"><div class="mitte">
+      <div class="name">${kand ? `<span class="punkt ${esc(kand.ampel)}"></span> ` : ""}${esc(p.ticker)} <span class="dim" style="font-weight:400">${esc(p.name)}</span></div>
+      <div class="zahlen"><span>${num(p.stueck, p.stueck % 1 ? 2 : 0)} Stk.</span><span>Einstand ${num(p.einstand)}</span><span>Kurs ${num(p.kurs)} ${esc(p.waehrung)}</span></div>
+      <div class="zahlen"><span class="${kl(p.gewinn_pct)}"><b>${pc(p.gewinn_pct)}</b> seit Kauf (${num(p.gewinn)} ${esc(p.waehrung)})</span></div>
+      <div class="zahlen dim"><span class="${kl(p.tag_pct)}">Tag ${pc(p.tag_pct)}</span><span class="${kl(p.woche_pct)}">Woche ${pc(p.woche_pct)}</span><span class="${kl(p.monat_pct)}">Monat ${pc(p.monat_pct)}</span></div>
+      ${p.notiz ? `<div class="dim klein" style="margin-top:4px">📝 ${esc(p.notiz)}</div>` : ""}
+      <div class="dim klein">seit ${esc(p.datum || "–")}</div></div>${spark(p.verlauf)}</div>
+      ${kursChart(p.verlauf, p.einstand)}
+      <div class="aktionen"><button class="knopf sek" data-edit="${esc(p.ticker)}">Bearbeiten</button><button class="knopf gefahr" data-del="${esc(p.ticker)}">Verkauft / entfernen</button></div></div>`;
+  }).join("");
+}
+
+function zeichneStatTab() {
+  let h = "<tr><th>Index</th><th>Auslöser</th><th>Trefferquote</th><th>Vorsprung</th><th>n</th></tr>";
+  const seen = {};
+  (D.index || []).forEach(() => {});
+  const S = {"S&P 500": {"Tag −2.5%": [76, 3.1, 25], "Woche −4%": [75, 1.7, 24], "Monat −8%": [69, 3.6, 13]},
+             "SMI": {"Tag −2.5%": [73, 0.5, 15], "Woche −4%": [71, 0.7, 21], "Monat −8%": [91, 3.2, 11]},
+             "DAX": {"Tag −2.5%": [74, 2.1, 31], "Woche −4%": [66, 1.5, 35], "Monat −8%": [77, 5.9, 13]}};
+  for (const i in S) for (const t in S[i]) h += `<tr><td>${i}</td><td>${t}</td><td>${S[i][t][0]} %</td><td>+${S[i][t][1]} %</td><td>${S[i][t][2]}</td></tr>`;
+  $("#statTab").innerHTML = h;
+}
+
+/* ---- Depot speichern ---- */
+function depotObjekt() {
+  const roh = (D.depot && Array.isArray(D.depot.positionen)) ? D.depot.positionen : (D.positionen || []);
+  const bar = D.depot && D.depot.bargeld_chf != null ? D.depot.bargeld_chf : ((D.konto || {}).bargeld_chf || 0);
+  return {bargeld_chf: bar, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || ""}))};
+}
+async function depotSpeichern(obj) {
+  $("#banner").innerHTML = '<div class="banner">Speichere …</div>';
+  try {
+    if (MODUS === "lokal") {
+      const r = await fetch("/api/depot", {method: "POST", body: JSON.stringify(obj)});
+      if (!r.ok) throw new Error("Server " + r.status);
+    } else {
+      const rec = await binLesen();                       // frisch lesen, damit Scanner-Daten nicht überschrieben werden
+      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, positionen: obj.positionen};
+      const alt = {}; (rec.positionen || []).forEach(p => alt[p.ticker] = p);
+      rec.positionen = obj.positionen.map(p => Object.assign({}, alt[p.ticker] || {}, p));   // neue Position sofort sichtbar, Kurs folgt beim nächsten Scan
+      rec.konto = Object.assign(rec.konto || {}, {bargeld_chf: obj.bargeld_chf});
+      await binSchreiben(rec);
+    }
+  } catch (e) { alert("Speichern fehlgeschlagen: " + e.message); }
+  await laden();
+}
+function dialogOeffnen(vor) {
+  editTicker = vor && vor.edit ? vor.ticker : null;
+  $("#dlgTitel").textContent = editTicker ? "Position bearbeiten" : "Position hinzufügen";
+  $("#fTicker").value = vor.ticker || ""; $("#fTicker").readOnly = !!editTicker;
+  $("#fName").value = vor.name || ""; $("#fStueck").value = vor.stueck || ""; $("#fEinstand").value = vor.einstand || "";
+  $("#fWaehrung").value = vor.waehrung || ""; $("#fDatum").value = vor.datum || new Date().toISOString().slice(0, 10);
+  $("#fNotiz").value = vor.notiz || "";
+  $("#dlgPos").showModal();
+}
+$("#formPos").addEventListener("submit", ev => {
+  if (ev.submitter && ev.submitter.value !== "ok") return;
+  const o = depotObjekt();
+  const p = {ticker: $("#fTicker").value.trim().toUpperCase(), name: $("#fName").value.trim(), stueck: parseFloat($("#fStueck").value),
+             einstand: parseFloat($("#fEinstand").value), datum: $("#fDatum").value, waehrung: $("#fWaehrung").value.trim().toUpperCase(), notiz: $("#fNotiz").value.trim()};
+  if (!p.ticker || !(p.stueck > 0) || !(p.einstand > 0)) return;
+  const i = o.positionen.findIndex(x => x.ticker === p.ticker);
+  if (i >= 0) o.positionen[i] = Object.assign(o.positionen[i], p); else o.positionen.push(p);
+  depotSpeichern(o);
+});
+
+/* ---- Ereignisse ---- */
+document.addEventListener("click", ev => {
+  const t = ev.target;
+  const nav = t.closest("nav button");
+  if (nav) { document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b === nav));
+    document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); window.scrollTo(0, 0); return; }
+  if (t.dataset.a) { fAmpel = t.dataset.a; zeichneKandidaten(); return; }
+  if (t.dataset.m) { fMarkt = t.dataset.m; zeichneKandidaten(); return; }
+  if (t.dataset.add) { const x = D.kandidaten.find(k => k.ticker === t.dataset.add);
+    dialogOeffnen({ticker: x.ticker, name: x.name, einstand: x.kurs, waehrung: x.waehrung}); return; }
+  if (t.dataset.edit) { const p = D.positionen.find(k => k.ticker === t.dataset.edit); dialogOeffnen(Object.assign({edit: true}, p)); return; }
+  if (t.dataset.del) { if (confirm(t.dataset.del + " aus dem Depot entfernen?")) { const o = depotObjekt(); o.positionen = o.positionen.filter(p => p.ticker !== t.dataset.del); depotSpeichern(o); } return; }
+  const kopf = t.closest(".titel-zeile");
+  if (kopf && kopf.closest(".karte[data-t]")) { const k = kopf.closest(".karte"); const id = k.dataset.t; offen.has(id) ? offen.delete(id) : offen.add(id); k.classList.toggle("offen"); }
+});
+function einstellungenOeffnen() { $("#eBin").value = binId(); $("#eKey").value = binKey(); $("#dlgEinst").showModal(); }
+$("#btnEinst").onclick = einstellungenOeffnen;
+$("#formEinst").addEventListener("submit", ev => {
+  if (ev.submitter && ev.submitter.value !== "ok") return;
+  lsSet("mb_bin", $("#eBin").value.trim()); lsSet("mb_key", $("#eKey").value.trim());
+  MODUS = null; laden();
+});
+$("#btnExport").onclick = () => {
+  const blob = new Blob([JSON.stringify(depotObjekt(), null, 1)], {type: "application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = "depot_" + new Date().toISOString().slice(0, 10) + ".json"; a.click();
+};
+$("#btnImport").onclick = () => $("#fileImport").click();
+$("#fileImport").onchange = async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try { const o = JSON.parse(await f.text()); if (!Array.isArray(o.positionen)) throw new Error("Format");
+    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, positionen: o.positionen});
+  } catch (e) { alert("Datei nicht lesbar: " + e.message); }
+  ev.target.value = "";
+};
+$("#btnNeuePos").onclick = () => dialogOeffnen({});
+$("#btnBargeld").onclick = () => { const v = prompt("Bargeld in CHF:", (D.konto || {}).bargeld_chf || 0); if (v === null) return;
+  const o = depotObjekt(); o.bargeld_chf = parseFloat(String(v).replace(/'/g, "")) || 0; depotSpeichern(o); };
+$("#btnDepot").onclick = async () => {
+  if (MODUS === "lokal") { await fetch("/api/refresh", {method: "POST", body: JSON.stringify({was: "depot"})}); setTimeout(laden, 2500); }
+  else laden();
+};
+$("#btnVoll").onclick = async () => { if (!confirm("Vollscan starten? Das dauert einige Minuten.")) return;
+  await fetch("/api/refresh", {method: "POST", body: JSON.stringify({was: "voll"})}); setTimeout(laden, 1500); };
+
+laden();
+// Lokal: jede Minute. Web-Modus: nur alle 15 Min. und nur bei sichtbarer Seite (Daten ändern sich max. alle 30 Min.; schont das JSONBin-Kontingent)
+let tick = 0;
+setInterval(() => { tick++; if (!document.hidden && (MODUS !== "web" || tick % 15 === 0)) laden(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) laden(); });
+</script>
+</body>
+</html>

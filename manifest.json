@@ -1,0 +1,14 @@
+{
+  "name": "Aktien-Watcher",
+  "short_name": "Aktien-Watcher",
+  "description": "Kurseinbrüche bei Qualitätsaktien beobachten, bewerten und das Depot verfolgen",
+  "start_url": "./aktien-watcher.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#10141b",
+  "theme_color": "#10141b",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
