@@ -115,7 +115,6 @@
     <h2>Indizes</h2><div id="indizes"></div>
     <div id="alarmeKurz"></div>
     <h2>Opportunitäten (Einzeltitel)</h2><div id="ampelsumme"></div>
-    <h2>Depot</h2><div id="depotkurz"></div>
   </section>
 
   <!-- Kandidaten -->
@@ -136,83 +135,107 @@
   <!-- Depot -->
   <section class="register" id="r-depot">
     <div id="konto"></div>
-    <div class="aktionen" style="margin:0 0 12px"><button class="knopf" id="btnNeuePos">+ Position hinzufügen</button><button class="knopf sek" id="btnBargeld">Einzahlen / Auszahlen</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
+    <div class="aktionen" style="margin:0 0 12px"><button class="knopf" id="btnNeuePos">+ Position hinzufügen</button><button class="knopf sek" id="btnBargeld">Einzahlungen ändern</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
     <div id="positionen"></div>
   </section>
 
   <!-- Info -->
   <section class="register info" id="r-info">
-    <h2>Was ist validiert – und was nicht?</h2>
+    <h2>Worum geht es?</h2>
     <div class="karte">
-      <p><b>Index-Alarm (validiert, mit Einschränkungen):</b> Kauf von S&amp;P 500, SMI oder DAX nach einem Rückgang (Tag −2.5 %, Woche −4 %, Monat −8 %) war im Hold-out (ca. 2015–2026) in 18 von 18 Fällen besser als der Durchschnittstag. Trefferquote 62–91 %, Mehrertrag +0.5 bis +5.9 % nach 3 Monaten. Aber: nur 11–35 Ereignisse je Test, überwiegend Aufschwungphase, ca. 2–3 Signale pro Jahr und Index.</p>
-      <p><b>Stars (Kursteil prüfbar, Rest nicht):</b> Ob Titel nahe am Hoch mit starker relativer Stärke danach besser laufen, lässt sich mit den Kursdaten testen (<code>stars_backtest.py</code>, Bedienung wie die früheren Tests). Das Ergebnis liegt noch nicht vor. Wachstum, Gewinnschätzungen und Revisionen lassen sich gratis nicht rückwirkend testen; dafür sammelt das Journal den Beleg über die Zeit.</p>
-      <p><b>Einzeltitel-Einbrüche (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
-      <p>Die Ampel ist eine strukturierte Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
+      <p>Der Aktien-Watcher durchsucht rund 650 Titel (SMI, DAX, MDAX, S&amp;P 500, Nasdaq 100) und zeigt dir die, die einen genaueren Blick lohnen. Er kauft nichts und gibt <b>keine Kaufsignale</b>. Er ist eine strukturierte Checkliste mit Ranking.</p>
+      <p>Ein Programm auf deinem PC (der <b>Scanner</b>) holt die Kurse und Kennzahlen und rechnet alles aus. Diese App zeigt nur die Ergebnisse und speichert dein Depot.</p>
     </div>
-    <h2>Synchronisation</h2>
-    <div class="karte"><ul>
-      <li>Der Scanner auf dem PC schreibt die Daten automatisch in den Bin: werktags 09–18 Uhr alle 30 Minuten, sonst alle 60 Minuten. Die App liest alle 15 Minuten nach, solange sie offen ist.</li>
-      <li><b>«↻ Neu laden»</b> löst einen Abgleich auf Abruf aus: Die App sendet ein Signal an den PC, dieser holt sofort frische Kurse und schreibt sie in den Bin. Nach etwa ein bis zwei Minuten erscheinen die Daten. Der PC muss dafür laufen.</li>
-      <li>Das Signal läuft über den kostenlosen Dienst ntfy.sh mit einem geheimen Kanalnamen (steht in der Config, kein Inhalt ausser «sync»). Es verbraucht keine JSONBin-Anfragen. Pro Abruf entstehen nur wenige Lese- und ein Schreibzugriff.</li>
+
+    <h2>Die Register</h2>
+    <div class="karte"><table class="mini">
+      <tr><th>Register</th><th style="text-align:left">Was du dort siehst</th></tr>
+      <tr><td><b>Übersicht</b></td><td style="text-align:left">Index-Alarm (S&amp;P 500, SMI, DAX), Depot-Alarme, die Top-Titel je Liste und das Gesamtranking.</td></tr>
+      <tr><td><b>Dashboard</b></td><td style="text-align:left">Dein Konto und Depot in Kacheln, Wertentwicklung, Verteilung, Gewinn je Position und das Journal.</td></tr>
+      <tr><td><b>Kandidaten</b></td><td style="text-align:left">«Alle» = ein gemeinsames Ranking. Daneben die drei Einzellisten. Antippen öffnet die Kriterien und Schlagzeilen. «+ Ins Depot legen» übernimmt den Titel.</td></tr>
+      <tr><td><b>Depot</b></td><td style="text-align:left">Deine Positionen mit Bewertung und Alarmen, Kontobewegungen, Export und Import.</td></tr>
+      <tr><td><b>Info</b></td><td style="text-align:left">Diese Erklärung.</td></tr>
+    </table></div>
+
+    <h2>Die drei Listen</h2>
+    <div class="karte"><table class="mini">
+      <tr><th>Liste</th><th style="text-align:left">Idee und Auslöser</th></tr>
+      <tr><td><b>Einbrüche</b></td><td style="text-align:left">Gute Firma wird billiger und erholt sich. Auslöser: in den letzten 10 Handelstagen ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen. Die 150 stärksten Einbrüche werden bewertet, die 60 besten angezeigt.</td></tr>
+      <tr><td><b>Stars</b></td><td style="text-align:left">Starke Trends laufen weiter. Auslöser: höchstens 10 % unter dem 52-Wochen-Hoch, über der 200-Tage-Linie und 6-Monats-Rendite im obersten Fünftel. Die 100 stärksten werden bewertet, die 40 besten angezeigt.</td></tr>
+      <tr><td><b>Wachstum</b></td><td style="text-align:left">Firmen mit starkem Geschäftswachstum. Auslöser (kein Kurssignal): Umsatzwachstum ≥10 % und Gewinnwachstum positiv, jeweils für das letzte Quartal gegenüber Vorjahr <i>und</i> laut Prognose. Die 40 besten werden angezeigt.</td></tr>
+    </table>
+    <ul>
+      <li>Ein Titel kann in mehreren Listen stehen (Etiketten «Einbruch», «Star», «Wachstum»). <b>«Im Rücksetzer»</b> heisst: Wachstumstitel mindestens 10 % unter dem Hoch oder im Einbruch-Scan, also starkes Geschäft zum tieferen Kurs.</li>
+      <li>Für Wachstum braucht der Scanner Kennzahlen jedes Titels. Er prüft pro Lauf rund 80 Titel neu, nach wenigen Läufen ist das ganze Universum abgedeckt (Fortschritt auf der Übersicht).</li>
+      <li>Alle Schwellen stehen in <code>aktien_watcher_config.json</code> und lassen sich ändern.</li>
     </ul></div>
-    <h2>Konto und Depot</h2>
-    <div class="karte"><ul>
-      <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto. Mit «Einzahlen / Auszahlen» legst du die Einzahlungen fest.</li>
-      <li><b>Kontostand = Einzahlungen − Einstand Depot.</b> Jeder Kauf senkt ihn um den Einstand, jeder Verkauf erhöht ihn um den Erlös (der Gewinn oder Verlust aus dem Verkauf bleibt im Kontostand). Er wird nicht zum Depotwert addiert.</li>
-      <li><b>Einstand Depot</b> = Summe der gekauften Titel zum Kaufpreis. <b>Depotwert (IST)</b> = aktueller Marktwert derselben Titel. <b>Gewinn / Verlust</b> = Depotwert − Einstand. <b>Heutige Veränderung</b> = Tagesbewegung der Titel in CHF, dazu in Prozent vom Depotwert.</li>
-      <li>Titel, die du schon vorher hattest, setzt du mit dem Haken «bereits vorhanden» ein: Der Betrag wird dann zusätzlich als Einzahlung verbucht und der Kontostand bleibt unverändert.</li>
-      <li>«Verkauft / entfernen» ohne Preis schreibt den Einstand wieder gut (für Fehleingaben).</li>
+
+    <h2>Wie bewertet wird: vier Anzeigen</h2>
+    <div class="karte"><table class="mini">
+      <tr><th>Anzeige</th><th style="text-align:left">Bedeutung</th></tr>
+      <tr><td><span class="punkt gruen"></span> <b>Ampel</b></td><td style="text-align:left">Regelbasierte Warnlampe. <b>Grün:</b> kein rotes Kriterium und mindestens 5 grüne (mind. 60 % der bewertbaren). <b>Rot:</b> ein kritisches Kriterium rot (Bilanz, sinkende Schätzungen, Warn-Schlagzeile), Umsatz <i>und</i> Gewinn rot, oder zwei rote Kriterien. Sonst <b>gelb</b>. Rote Titel stehen immer am Ende des Rankings.</td></tr>
+      <tr><td><b>Score</b></td><td style="text-align:left">0–100, gewichteter Durchschnitt der Kriterien einer Liste (Grün 1, Gelb ½, Rot 0). Jede Liste gewichtet anders. Er sortiert die Liste. <b>Scores verschiedener Listen sind nicht vergleichbar.</b></td></tr>
+      <tr><td><b>Gesamtscore</b></td><td style="text-align:left">0–100, für alle Titel mit <b>denselben</b> Kriterien und Gewichten gerechnet, <b>ohne Kurssignale</b>. Er misst die Unternehmensqualität und ist die Grundlage des Rankings «Alle». Nur er ist über die Listen hinweg vergleichbar.</td></tr>
+      <tr><td><b>x von y erfüllt</b></td><td style="text-align:left">Anzahl grüner Kriterien von den bewertbaren. Kriterien ohne Daten sind grau und zählen nicht mit (die übrigen Gewichte werden hochgerechnet).</td></tr>
+    </table>
+    <p class="dim klein" style="margin-top:8px">Warum der Gesamtscore keine Kurssignale enthält: Sonst verlöre ein gefallener Titel automatisch gegen einen steigenden. Die Kurssignale stecken im Auslöser der Liste (Typ-Etikett). Ein Titel mit hohem Gesamtscore und Etikett «Einbruch» ist also ein gutes Unternehmen zum tieferen Kurs.</p></div>
+
+    <h2>Die Kriterien und ihre Gewichte</h2>
+    <div class="karte"><table class="mini">
+      <tr><th>Kriterium</th><th>Einbr.</th><th>Stars</th><th>Wachst.</th><th>Gesamt</th></tr>
+      <tr><td>Gewinnwachstum (Prognose)</td><td>18</td><td>14</td><td>15</td><td>18</td></tr>
+      <tr><td>Umsatzwachstum (Prognose)</td><td>14</td><td>10</td><td>15</td><td>14</td></tr>
+      <tr><td>Schätzungsrevisionen (30 Tage)</td><td>14</td><td>20</td><td>18</td><td>20</td></tr>
+      <tr><td>Verschuldung &amp; Cashflow</td><td>12</td><td>5</td><td>6</td><td>12</td></tr>
+      <tr><td>Betriebsmarge</td><td>10</td><td>5</td><td>10</td><td>10</td></tr>
+      <tr><td>Bewertung (Forward-KGV)</td><td>10</td><td>–</td><td>–</td><td>–</td></tr>
+      <tr><td>PEG (KGV im Verhältnis zum Wachstum)</td><td>–</td><td>10</td><td>14</td><td>14</td></tr>
+      <tr><td>Analysten (Empfehlung, Kursziel)</td><td>8</td><td>4</td><td>4</td><td>8</td></tr>
+      <tr><td>Ursache des Einbruchs</td><td>8</td><td>–</td><td>–</td><td>–</td></tr>
+      <tr><td>Relative Stärke (6 Monate)</td><td>–</td><td>18</td><td>8</td><td>–</td></tr>
+      <tr><td>Trend (200-Tage-Linie, Hoch)</td><td>–</td><td>10</td><td>5</td><td>–</td></tr>
+      <tr><td>Innovation (Forschungsanteil)</td><td>3</td><td>2</td><td>3</td><td>2</td></tr>
+      <tr><td>Schlagzeilen (Stichwortsuche)</td><td>3</td><td>2</td><td>2</td><td>2</td></tr>
+    </table>
+    <ul style="margin-top:8px">
+      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in der Config unter «gewichte», «gewichte_stars», «gewichte_wachstum», «gewichte_gesamt».</li>
+      <li><b>PEG</b> = Forward-KGV geteilt durch das erwartete Gewinnwachstum in % (≤1.5 grün, ≤2.5 gelb, sonst rot).</li>
+      <li><b>Ursache des Einbruchs:</b> Schlagzeilen der letzten Tage (Yahoo Finance, Google News) werden per Stichwort Themen zugeordnet (Klage, Kartell, Untersuchung, Gewinnwarnung …). Das ist eine Einordnung, <b>keine Zusammenfassung</b>: den Inhalt musst du in der Meldung lesen.</li>
+      <li>«Neue Produkte» und «Innovation» werden nur über Stichwörter und den Forschungsanteil geschätzt. Daten von Yahoo Finance können Lücken oder Fehler haben.</li>
     </ul></div>
-    <h2>Drei Listen, drei Ideen</h2>
+
+    <h2>Konto, Depot und Alarme</h2>
     <div class="karte"><ul>
-      <li><b>Universum:</b> SMI, DAX, MDAX, S&amp;P 500 und Nasdaq 100 (rund 650 Titel, Listen von Wikipedia, wöchentlich erneuert; eigene Titel über «zusatz_ticker» in der Config).</li>
-      <li><b>Einbrüche:</b> Kurs in den letzten 10 Handelstagen ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen. Die 150 stärksten Einbrüche werden bewertet, die 60 mit dem besten Score angezeigt.</li>
-      <li><b>Stars:</b> höchstens 10 % unter dem 52-Wochen-Hoch, über der 200-Tage-Linie und mit der 6-Monats-Rendite im obersten Fünftel des Universums. Die 100 stärksten werden bewertet, die 40 mit dem besten Score angezeigt.</li>
-      <li><b>Wachstum:</b> Umsatzwachstum (letztes Quartal gegenüber Vorjahr <i>und</i> Prognose) mindestens 10 % und Gewinnwachstum (bisher <i>und</i> Prognose) positiv, kein Kurs-Auslöser. Weil dafür Kennzahlen jedes Titels nötig sind, prüft der Scanner pro Lauf rund 80 Titel neu; nach wenigen Läufen ist das ganze Universum abgedeckt (Fortschritt auf der Übersicht). Angezeigt werden die 40 mit dem besten Score.</li>
-      <li>Ein Titel kann in mehreren Listen stehen («auch: Star»). <b>«Im Rücksetzer»</b> = Wachstumstitel mindestens 10 % unter dem Hoch oder im Einbruch-Scan: starkes Geschäft zum tieferen Kurs.</li>
-      <li><b>Ranking:</b> je Liste nach Score absteigend, Titel mit <b>roter</b> Ampel am Ende. Alle Schwellen sind in der Config änderbar.</li>
+      <li><b>Kontostand = Einzahlungen − Einstand Depot.</b> Mit «Einzahlungen ändern» (Dashboard oder Depot) legst du den Gesamtbetrag fest, z. B. 5000, oder zahlst mit + / − einen Betrag ein bzw. aus. Jeder Kauf senkt den Kontostand um den Einstand, jeder Verkauf erhöht ihn um den Erlös. Kontostand und Depotwert werden nie addiert.</li>
+      <li><b>Einstand Depot</b> = Summe der gekauften Titel zum Kaufpreis (in CHF). <b>Depotwert (IST)</b> = aktueller Marktwert. <b>Gewinn / Verlust</b> = Depotwert − Einstand. <b>Heutige Veränderung</b> = Tagesbewegung der Titel in CHF und in % vom Depotwert.</li>
+      <li>Hattest du einen Titel schon vorher, setzt du beim Hinzufügen den Haken «bereits vorhanden»: Der Betrag wird dann als Einzahlung verbucht und der Kontostand bleibt gleich. «Verkauft / entfernen» ohne Preis schreibt den Einstand wieder gut (für Fehleingaben).</li>
+      <li>Beim Ins-Depot-Legen merkt sich die App Liste, Ampel und Score zum Kaufzeitpunkt. Die laufende Bewertung nutzt das Profil, in dem du gekauft hast.</li>
+      <li><b>Depot-Alarme</b> (Hinweise zum Nachschauen, keine Verkaufsaufträge): <b>Rückgang vom Höchststand</b> ≥8 % (wenn der Titel zwischenzeitlich ≥3 % im Plus war), <b>Verlust</b> ≥10 % unter Einstand, <b>Ampel verschlechtert</b> seit dem Kauf, <b>Score</b> um ≥15 Punkte gesunken. Der Höchststand stammt aus dem Kursverlauf seit Kauf (höchstens 60 Handelstage) und wird danach bei jedem Abgleich nachgeführt.</li>
     </ul></div>
-    <h2>Die Kriterien</h2>
-    <div class="karte"><ul>
-      <li>In allen Listen: <b>Umsatz-</b> und <b>Gewinnwachstum</b> (Prognose), <b>Betriebsmarge</b>, <b>Verschuldung &amp; Cashflow</b>, <b>Analysten</b> (Empfehlung, Kursziel), <b>Änderung der Gewinnschätzungen</b> (30 Tage), <b>Forschungsanteil</b>, <b>Schlagzeilen</b> (Stichwortsuche).</li>
-      <li>Nur bei Einbrüchen: <b>Ursache des Einbruchs</b> (Markt oder Titel, dazu Themen aus den Schlagzeilen) und <b>Forward-KGV</b>.</li>
-      <li>Nur bei Stars und Wachstum: <b>Relative Stärke</b> (6-Monats-Rendite im Vergleich zum Universum), <b>Trend</b> (200-Tage-Linie und Abstand zum Hoch) und <b>PEG</b> (Forward-KGV geteilt durch das erwartete Gewinnwachstum in %: ≤1.5 grün, ≤2.5 gelb, sonst rot). Es gibt also immer 9 bis 11 Kriterien, je nach Liste.</li>
-      <li>Jedes Kriterium ist grün, gelb, rot oder grau (keine Daten, zählt nicht mit). <b>«x von y Kriterien erfüllt»</b> = Anzahl grüner Kriterien von den bewertbaren.</li>
-      <li><b>Ursache des Einbruchs:</b> Schlagzeilen der letzten Tage (Yahoo Finance und Google News, kostenlos) werden per Stichwort Themen zugeordnet, z. B. Klage/Schadenersatz, Kartell/Regulierung, Untersuchung, Gewinnwarnung. Das ist eine Einordnung, <b>keine Zusammenfassung</b>: Den Inhalt musst du in der verlinkten Meldung lesen.</li>
-    </ul></div>
-    <h2>Score (0–100)</h2>
-    <div class="karte"><ul>
-      <li>Gewichteter Durchschnitt: Grün zählt 1, Gelb ½, Rot 0, jeweils mal Gewicht. Fehlende Daten bleiben aussen vor, die übrigen Gewichte werden hochgerechnet. Jede Liste hat ihre <b>eigenen Gewichte</b>:</li>
-      <li><b>Einbrüche:</b> Gewinnwachstum 18, Umsatzwachstum 14, Schätzungsrevisionen 14, Bilanz 12, Marge 10, Bewertung 10, Analysten 8, Ursache 8, Innovation 3, Nachrichten 3.</li>
-      <li><b>Stars:</b> Schätzungsrevisionen 20, relative Stärke 18, Gewinnwachstum 14, Umsatzwachstum 10, Trend 10, PEG 10, Marge 5, Bilanz 5, Analysten 4, Innovation 2, Nachrichten 2.</li>
-      <li><b>Wachstum:</b> Schätzungsrevisionen 18, Gewinnwachstum 15, Umsatzwachstum 15, PEG 14, Marge 10, relative Stärke 8, Bilanz 6, Trend 5, Analysten 4, Innovation 3, Nachrichten 2.</li>
-      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in <code>aktien_watcher_config.json</code> unter «gewichte», «gewichte_stars» und «gewichte_wachstum».</li>
-    </ul></div>
-    <h2>Gesamtscore: ein Massstab für alle Listen</h2>
-    <div class="karte"><ul>
-      <li>Die Scores der drei Listen sind nicht direkt vergleichbar, weil jede Liste anders gewichtet. Für das gemeinsame Ranking («Alle») bekommt deshalb jeder Titel zusätzlich einen <b>Gesamtscore</b> mit <b>denselben Kriterien und Gewichten</b>.</li>
-      <li><b>Gewichte:</b> Schätzungsrevisionen 20, Gewinnwachstum 18, Umsatzwachstum 14, PEG 14, Bilanz 12, Marge 10, Analysten 8, Innovation 2, Nachrichten 2.</li>
-      <li><b>Bewusst nicht enthalten:</b> Kurssignale (Einbruch, Trend, relative Stärke) und die Ursache des Einbruchs. Sie legen fest, in welche Liste ein Titel kommt (Typ-Etikett). Würden sie im Score stehen, wären Stars und Einbrüche nicht fair vergleichbar: Ein gefallener Titel verlöre automatisch gegen einen steigenden.</li>
-      <li>Der Gesamtscore misst also die <b>Unternehmensqualität</b>, nicht die Kaufchance. Ein Titel mit hohem Gesamtscore und dem Etikett «Einbruch» ist ein gutes Unternehmen zum tieferen Kurs. Die Gewichte sind eine Annahme, <b>nicht belegt</b>; das Journal (Dashboard, Gruppe «Gesamtscore») zeigt mit der Zeit, ob sie etwas taugen. Anpassbar unter «gewichte_gesamt» in der Config.</li>
-    </ul></div>
+
     <h2>Journal: der eigene Beleg</h2>
     <div class="karte"><ul>
-      <li>Der Scanner hält jeden bewerteten Titel (auch die nicht angezeigten) mit Liste, Score, Ampel und Kurs fest, je Titel und Liste höchstens alle 30 Tage.</li>
-      <li>Nach 1, 3 und 6 Monaten wird verglichen, wie sich die Titel gegenüber dem Durchschnitt des Universums entwickelt haben, getrennt nach Score (≥ 70, 45–69, &lt; 45 oder rot). Das steht im Dashboard. Wirkt der Score, muss die Gruppe «≥ 70» dauerhaft klar besser abschneiden als die Gruppe «&lt; 45». Erste Ergebnisse gibt es nach rund einem Monat; aussagekräftig wird es ab etwa 30 Fällen je Feld und über verschiedene Marktphasen.</li>
-      <li>Grenzen: vor Kosten, keine Beta-Bereinigung (starke Titel sind oft Hochbeta), nur Titel des heutigen Universums.</li>
+      <li>Der Scanner hält jeden bewerteten Titel (auch die nicht angezeigten) mit Liste, Score, Gesamtscore, Ampel und Kurs fest, je Titel und Liste höchstens alle 30 Tage.</li>
+      <li>Nach 1, 3 und 6 Monaten vergleicht das Dashboard, wie sich Titel mit hohem (≥70), mittlerem (45–69) und tiefem Score (&lt;45 oder rot) gegenüber dem Durchschnitt des Universums entwickelt haben. Wirkt der Score, muss «≥70» dauerhaft klar besser sein als «&lt;45».</li>
+      <li>Erste Zahlen gibt es nach rund einem Monat, aussagekräftig wird es ab etwa 30 Fällen je Feld und über verschiedene Marktphasen. Grenzen: vor Kosten, keine Beta-Bereinigung, nur Titel des heutigen Universums.</li>
     </ul></div>
-    <h2>Depot-Alarme</h2>
+
+    <h2>Synchronisation</h2>
     <div class="karte"><ul>
-      <li><b>Rückgang vom Höchststand:</b> Der Kurs liegt mindestens 8 % unter dem Höchststand seit Kauf, und der Titel stand zwischenzeitlich mindestens 3 % im Plus («Welle zu Ende reiten, dann sichern»).</li>
-      <li><b>Verlust:</b> mindestens 10 % unter dem Einstand.</li>
-      <li><b>Ampel verschlechtert</b> gegenüber dem Kauf oder <b>Score um mindestens 15 Punkte gesunken.</b> Verglichen wird mit der Bewertung im Profil, in dem du den Titel gekauft hast.</li>
-      <li>Der Höchststand wird aus dem Kursverlauf seit Kauf (höchstens 60 Handelstage) und dann fortlaufend bei jedem Abgleich gemerkt. Die Schwellen sind in der Config änderbar. Alarme sind Hinweise zum Nachschauen, keine Verkaufsaufträge.</li>
+      <li>Der Scanner schreibt die Daten automatisch in den Online-Speicher (JSONBin): werktags 09–18 Uhr alle 30 Minuten, sonst alle 60 Minuten. Die App liest alle 15 Minuten nach, solange sie offen ist.</li>
+      <li><b>«↻ Neu laden»</b> löst einen Abgleich auf Abruf aus: Die App sendet ein Signal an den PC (über den Gratisdienst ntfy.sh mit geheimem Kanalnamen, Inhalt nur «sync»), der PC holt frische Kurse und schreibt sie in den Speicher. Nach ein bis zwei Minuten erscheinen die Daten. Der PC muss dafür laufen.</li>
+      <li>Das Depot wird in der App geändert und vom Scanner übernommen (die neuere Fassung gewinnt).</li>
     </ul></div>
-    <h2>Ampel</h2>
-    <div class="karte"><ul>
-      <li>Die Ampel ist regelbasiert und unabhängig vom Score. <b>Grün:</b> kein rotes Kriterium und mindestens 5 grüne (mind. 60 % der bewertbaren). <b>Rot:</b> ein kritisches Kriterium rot (Bilanz, sinkende Schätzungen, Warn-Schlagzeile), Umsatz <i>und</i> Gewinn rot, oder zwei rote Kriterien. Sonst <b>gelb</b>.</li>
-      <li><b>Grenzen:</b> «Neue Produkte» und «Innovation» werden nur über Schlagzeilen-Stichwörter und den Forschungsanteil geschätzt, nicht inhaltlich gelesen. Daten von Yahoo Finance können Lücken oder Fehler haben. Lies die Schlagzeilen selbst.</li>
-    </ul></div>
+
+    <h2>Was ist belegt – und was nicht?</h2>
+    <div class="karte">
+      <p><b>Index-Alarm (belegt, mit Einschränkungen):</b> Kauf von S&amp;P 500, SMI oder DAX nach einem Rückgang (Tag −2.5 %, Woche −4 %, Monat −8 %) war im Hold-out (ca. 2015–2026) in 18 von 18 Fällen besser als der Durchschnittstag. Trefferquote 62–91 %, Mehrertrag +0.5 bis +5.9 % nach 3 Monaten. Aber: nur 11–35 Ereignisse je Test, überwiegend Aufschwungphase, ca. 2–3 Signale pro Jahr und Index.</p>
+      <p><b>Einbrüche bei Einzeltiteln (nicht belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte keinen Vorteil.</p>
+      <p><b>Stars, Kursteil (nicht belegt):</b> Der Test mit Kursdaten (2003–2026, ca. 470 Titel) bestand nicht. In der Suchperiode bis ca. 2019 lag der Mehrertrag bei allen Varianten unter null, im Hold-out war er bei längeren Horizonten positiv, aber nicht signifikant. Momentum hängt offenbar von der Marktphase ab.</p>
+      <p><b>Wachstum, Gewinnschätzungen, Revisionen (nicht testbar):</b> Gibt es gratis nicht rückwirkend. Dafür sammelt das Journal den Beleg über die Zeit.</p>
+      <p>Ampel, Score und Gesamtscore sind eine Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
+    </div>
+
     <h2>Index-Statistik (Backtest, Hold-out, 3 Monate nach Signal)</h2>
     <div class="karte"><table class="mini" id="statTab"></table>
       <div class="dim klein" style="margin-top:8px">Trefferquote = Anteil positiver 3-Monats-Renditen nach Kosten. Vorsprung = Mehrertrag gegenüber dem Durchschnittstag. n = Anzahl Ereignisse.</div></div>
@@ -221,8 +244,8 @@
 
 <nav>
   <button data-r="uebersicht" class="aktiv"><span class="ic">📊</span>Übersicht</button>
-  <button data-r="kandidaten"><span class="ic">🚦</span>Kandidaten</button>
   <button data-r="dashboard"><span class="ic">📈</span>Dashboard</button>
+  <button data-r="kandidaten"><span class="ic">🚦</span>Kandidaten</button>
   <button data-r="depot"><span class="ic">💼</span>Depot</button>
   <button data-r="info"><span class="ic">ℹ️</span>Info</button>
 </nav>
@@ -268,7 +291,10 @@ function alleZusammen() {
     else { e.typen.push(TYP_INFO[t].kurz); e.ausloeser = e.ausloeser.concat(x.ausloeser || []); e.eigene[t] = x.score;
            if (t === "einbruch") { e.ursachen = x.ursachen; e.ruecksetzer = e.ruecksetzer || true; } if (x.ruecksetzer) e.ruecksetzer = true; }
   }
-  const out = [...m.values()].filter(x => x.kriterien_g && x.kriterien_g.length).map(x => {
+  const OHNE = ["ursache", "bewertung", "relstaerke", "trend"];
+  const out = [...m.values()].filter(x => x.score_g != null).map(x => {
+    x.kriterien_g = (x.kriterien || []).filter(k => !OHNE.includes(k.key));
+    if (x.peg_g && !x.kriterien_g.some(k => k.key === "peg")) x.kriterien_g.push(x.peg_g);
     const anw = x.kriterien_g.filter(k => k.status !== "grau"), g = anw.filter(k => k.status === "gruen").length, r = anw.filter(k => k.status === "rot").length;
     return Object.assign(x, {score: x.score_g, ampel: x.ampel_g, kriterien: x.kriterien_g, erfuellt: g, bewertbar: anw.length, punkte: g + " von " + anw.length + " grün, " + r + " rot", auch_in: []});
   });
@@ -315,6 +341,7 @@ async function binSchreiben(obj) {
 }
 
 const $ = s => document.querySelector(s);
+const newsLink = n => /^https?:\/\//.test(n.link || "") ? n.link : "https://news.google.com/search?q=" + encodeURIComponent(n.titel || "");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num = (x, d = 2) => x == null ? "–" : Number(x).toLocaleString("de-CH", {minimumFractionDigits: d, maximumFractionDigits: d});
 const pc = x => x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toLocaleString("de-CH", {minimumFractionDigits: 1, maximumFractionDigits: 1}) + " %";
@@ -394,7 +421,7 @@ function zeichne() {
   if (D.gekuerzt) b += '<div class="banner">Hinweis: Liste wegen Grössenlimit gekürzt (schwächste Kandidaten ausgeblendet).</div>';
   if (!D.stand && !(D.status && D.status.laeuft)) b += '<div class="banner">Noch keine Daten. Der erste Scan startet automatisch oder mit «↻ Vollscan».</div>';
   $("#banner").innerHTML = b;
-  zeichneIndizes(); zeichneAlarmeKurz(); zeichneAmpelSumme(); zeichneDepotKurz(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); zeichneStatTab();
+  zeichneIndizes(); zeichneAlarmeKurz(); zeichneAmpelSumme(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); zeichneStatTab();
 }
 
 function zeichneIndizes() {
@@ -443,20 +470,12 @@ function zeichneAlarmeKurz() {
   $("#alarmeKurz").innerHTML = a.length ? '<h2>Depot-Alarme</h2><div class="karte">' + a.map(x => `<div class="alarm ${esc(x.stufe)}" style="margin:0 0 6px"><b>${esc(x.ticker)}</b>: ${esc(x.text)}</div>`).join("") + '</div>' : "";
 }
 
-function zeichneDepotKurz() {
-  if (!(D.positionen || []).length) { $("#depotkurz").innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
-  const w = kontoWerte();
-  $("#depotkurz").innerHTML = `<div class="kacheln"><div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(w.wert)}</div></div>
-    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(w.gewinn)}">${chf(w.gewinn)}<div class="klein">${pc(w.gewinn_pct)}</div></div></div>
-    <div class="kachel" style="grid-column:1/-1"><span class="dim klein">Heutige Veränderung</span><div class="w ${kl(w.tag)}">${chf(w.tag)} <span class="klein">${pc(w.tag_pct)} vom Depotwert</span></div></div></div>`;
-}
-
 function ursachenBlock(x) {
   const u = x.ursachen || [];
   const kopf = '<h2 style="margin:12px 0 6px;font-size:13px">Mögliche Ursachen laut Schlagzeilen</h2>';
   if (!u.length) return kopf + '<div class="dim klein" style="margin-bottom:8px">Kein klarer Auslöser in den Schlagzeilen erkennbar (Marktumfeld, Zahlen oder Stimmung selbst prüfen).</div>';
   return kopf + u.map(z => `<div style="padding:5px 0;font-size:13px"><b style="color:var(--warn)">⚑ ${esc(z.thema)}</b> <span class="dim klein">${z.n} Meldung${z.n > 1 ? "en" : ""}</span>
-    <div>${/^https?:\/\//.test(z.link || "") ? `<a href="${esc(z.link)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--grau)">${esc(z.titel)}</a>` : esc(z.titel)} <span class="dim klein">${esc(z.quelle || "")} ${esc(z.zeit || "")}</span></div></div>`).join("")
+    <div><a href="${esc(newsLink(z))}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--grau)">${esc(z.titel)}</a> <span class="dim klein">${esc(z.quelle || "")} ${esc(z.zeit || "")}</span></div></div>`).join("")
     + '<div class="dim klein" style="margin:4px 0 8px">Automatische Stichwort-Zuordnung (Yahoo Finance + Google News), keine inhaltliche Zusammenfassung. Meldungen selbst lesen.</div>';
 }
 
@@ -479,7 +498,7 @@ function zeichneKandidaten() {
   $("#kandidatenliste").innerHTML = liste_.map(x => {
     const imDepot = (D.positionen || []).some(p => p.ticker === x.ticker);
     const kr = x.kriterien.map(k => `<div class="krit"><span class="punkt ${esc(k.status)}" style="margin-top:4px"></span><div class="t"><b>${esc(k.titel)}</b> · ${esc(k.wert)}<div class="dim">${esc(k.text)}</div></div></div>`).join("");
-    const nw = (x.news || []).map(n => `<div>${/^https?:\/\//.test(n.link || "") ? `<a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.titel)}</a>` : esc(n.titel)} <span class="dim klein">${esc(n.quelle)} ${esc(n.zeit)}</span></div>`).join("");
+    const nw = (x.news || []).map(n => `<div><a href="${esc(newsLink(n))}" target="_blank" rel="noopener">${esc(n.titel)}</a> <span class="dim klein">${esc(n.quelle)} ${esc(n.zeit)}</span></div>`).join("");
     return `<div class="karte ${offen.has(fTyp + x.ticker) ? "offen" : ""}" data-t="${esc(fTyp + x.ticker)}">
       <div class="titel-zeile"><div style="display:flex;flex-direction:column;align-items:center;gap:5px"><span class="rang">#${rang[x.ticker]}</span><span class="punkt ${esc(x.ampel)}"></span></div>
         <div class="mitte"><div class="name">${esc(x.ticker)} <span class="dim" style="font-weight:400">${esc(x.name)}</span></div>
@@ -538,7 +557,8 @@ function kontoKacheln() {
     <div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(w.wert)}</div><div class="klein dim">aktueller Marktwert</div></div>
     <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(w.gewinn)}">${chf(w.gewinn)}<div class="klein">${pc(w.gewinn_pct)}</div></div></div>
     <div class="kachel" style="grid-column:1/-1"><span class="dim klein">Heutige Veränderung</span><div class="w ${kl(w.tag)}">${chf(w.tag)} <span class="klein">${pc(w.tag_pct)} vom Depotwert</span></div></div></div>
-    <div class="dim klein" style="margin:-2px 0 10px">Kontostand = Einzahlungen − Einstand Depot. Kontostand und Depotwert werden nicht addiert.</div>`;
+    <div class="aktionen" style="margin:0 0 6px"><button class="knopf sek" data-act="ein">Einzahlungen ändern</button></div>
+    <div class="dim klein" style="margin:0 0 10px">Kontostand = Einzahlungen − Einstand Depot. Kontostand und Depotwert werden nicht addiert.</div>`;
 }
 
 function buchungenKarte() {
@@ -550,7 +570,7 @@ function buchungenKarte() {
 
 function zeichneDepot() {
   const k = D.konto || {}, pos = D.positionen || [];
-  $("#konto").innerHTML = kontoKacheln() + `<div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
+  $("#konto").innerHTML = `<div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
   if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen.</div>'; return; }
   $("#positionen").innerHTML = pos.map(p => {
     const kand = alleKand().find(x => x.ticker === p.ticker);
@@ -717,6 +737,7 @@ document.addEventListener("click", ev => {
   const nav = t.closest("nav button");
   if (nav) { document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b === nav));
     document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); $("#seite").scrollTo(0, 0); return; }
+  if (t.dataset.act === "ein") { einzahlungAendern(); return; }
   if (t.dataset.gehe) { fTyp = t.dataset.gehe; fAmpel = "alle"; fMarkt = "alle"; fSort = "rang"; zeichneKandidaten();
     document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b.dataset.r === "kandidaten"));
     document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-kandidaten")); $("#seite").scrollTo(0, 0); return; }
@@ -761,13 +782,18 @@ $("#fileImport").onchange = async ev => {
   ev.target.value = "";
 };
 $("#btnNeuePos").onclick = () => dialogOeffnen({});
-$("#btnBargeld").onclick = () => {
-  const v = prompt("Kontostand (CHF), aktuell " + chf(kontoWerte().kontostand) + ".\nBetrag eingeben: positiv = Einzahlung, negativ = Auszahlung.\nMit = davor den Kontostand direkt setzen (z. B. =5000).", "");
+function einzahlungAendern() {
+  const o = depotObjekt(), cur = einzahlungVon(o);
+  const v = prompt("Einzahlungen gesamt (CHF), aktuell " + chf(cur) + ".\nNeuen Gesamtbetrag eingeben, z. B. 5000.\nMit + oder − davor: nur diesen Betrag ein- bzw. auszahlen (z. B. +500).", "");
   if (v === null || String(v).trim() === "") return;
-  const s = String(v).trim().replace(/'/g, "").replace(",", "."), o = depotObjekt();
-  if (s.startsWith("=")) { const n = parseFloat(s.slice(1)); if (isNaN(n)) return; kontoFestschreiben(o); buchen(o, "Korrektur", "Kontostand gesetzt", n - o.bargeld_chf); }
-  else { const n = parseFloat(s); if (isNaN(n) || n === 0) return; buchen(o, n > 0 ? "Einzahlung" : "Auszahlung", "", n); }
-  depotSpeichern(o); };
+  const t = String(v).trim().replace(/'/g, "").replace(",", ".").replace("−", "-"), n = parseFloat(t);
+  if (isNaN(n)) return;
+  const rel = t.startsWith("+") || t.startsWith("-"), delta = rel ? n : n - cur;
+  if (Math.abs(delta) < 0.005) return;
+  buchen(o, delta > 0 ? "Einzahlung" : "Auszahlung", rel ? "" : "Einzahlungen auf " + chf(n) + " gesetzt", delta);
+  depotSpeichern(o);
+}
+$("#btnBargeld").onclick = einzahlungAendern;
 // 2026-10-14: Sync auf Abruf. Web-Modus: Signal 'sync' an den PC (Kanal-Name steht im Bin), dann den Bin kurz beobachten, bis neue Daten da sind.
 // Das Signal laeuft ueber den Gratisdienst ntfy.sh und verbraucht keine JSONBin-Anfragen (nur die wenigen Lesezugriffe beim Warten).
 const SYNC_SERVER = "https://ntfy.sh";
