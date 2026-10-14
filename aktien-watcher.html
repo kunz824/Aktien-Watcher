@@ -98,7 +98,7 @@
   <div class="kopf">
     <div style="display:flex;align-items:center;gap:10px"><img src="icon-192.png" alt="" width="34" height="34" style="border-radius:8px;flex:none"><div><h1>Aktien-Watcher</h1><div class="dim klein" id="stand">lädt …</div></div></div>
     <div style="display:flex;gap:6px">
-      <button class="knopf sek" id="btnDepot">↻ Neu laden</button>
+      <button class="knopf sek" id="btnDepot" title="Holt frische Kurse vom PC (Sync auf Abruf)">↻ Neu laden</button>
       <button class="knopf sek" id="btnVoll">↻ Vollscan</button>
       <button class="knopf sek" id="btnEinst" title="Einstellungen">⚙</button>
     </div>
@@ -140,6 +140,12 @@
       <p><b>Einzeltitel (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel unten basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
       <p>Die Ampel ist eine strukturierte Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
     </div>
+    <h2>Synchronisation</h2>
+    <div class="karte"><ul>
+      <li>Der Scanner auf dem PC schreibt die Daten automatisch in den Bin: werktags 09–18 Uhr alle 30 Minuten, sonst alle 60 Minuten. Die App liest alle 15 Minuten nach, solange sie offen ist.</li>
+      <li><b>«↻ Neu laden»</b> löst einen Abgleich auf Abruf aus: Die App sendet ein Signal an den PC, dieser holt sofort frische Kurse und schreibt sie in den Bin. Nach etwa ein bis zwei Minuten erscheinen die Daten. Der PC muss dafür laufen.</li>
+      <li>Das Signal läuft über den kostenlosen Dienst ntfy.sh mit einem geheimen Kanalnamen (steht in der Config, kein Inhalt ausser «sync»). Es verbraucht keine JSONBin-Anfragen. Pro Abruf entstehen nur wenige Lese- und ein Schreibzugriff.</li>
+    </ul></div>
     <h2>Konto und Depot</h2>
     <div class="karte"><ul>
       <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto: Mit «Einzahlen / Auszahlen» legst du das Guthaben fest. Es wird <b>nicht</b> zum Depotwert addiert.</li>
@@ -601,10 +607,35 @@ $("#btnBargeld").onclick = () => {
   if (s.startsWith("=")) { const n = parseFloat(s.slice(1)); if (isNaN(n)) return; buchen(o, "Korrektur", "Kontostand gesetzt", n - (o.bargeld_chf || 0)); }
   else { const n = parseFloat(s); if (isNaN(n) || n === 0) return; buchen(o, n > 0 ? "Einzahlung" : "Auszahlung", "", n); }
   depotSpeichern(o); };
-$("#btnDepot").onclick = async () => {
-  if (MODUS === "lokal") { await fetch("/api/refresh", {method: "POST", body: JSON.stringify({was: "depot"})}); setTimeout(laden, 2500); }
-  else laden();
-};
+// 2026-10-14: Sync auf Abruf. Web-Modus: Signal 'sync' an den PC (Kanal-Name steht im Bin), dann den Bin kurz beobachten, bis neue Daten da sind.
+// Das Signal laeuft ueber den Gratisdienst ntfy.sh und verbraucht keine JSONBin-Anfragen (nur die wenigen Lesezugriffe beim Warten).
+const SYNC_SERVER = "https://ntfy.sh";
+let syncLaeuft = false;
+const stempel = d => [d.stand, d.depot_stand].join("|");
+async function neuLaden() {
+  if (syncLaeuft) return;
+  if (MODUS === "lokal") { await fetch("/api/refresh", {method: "POST", body: JSON.stringify({was: "depot"})}); setTimeout(laden, 2500); return; }
+  await laden();
+  const topic = D.sync_topic;
+  if (!topic) { $("#banner").innerHTML += '<div class="banner">Kein Sync-Kanal im Bin. Läuft der Scanner mit der neuen Version? Daten wurden nur neu gelesen.</div>'; return; }
+  syncLaeuft = true; const btn = $("#btnDepot"); btn.disabled = true;
+  const vorher = stempel(D);
+  const meldung = t => { $("#banner").innerHTML = '<div class="banner">' + t + '</div>'; };
+  try {
+    meldung("⏳ Aktualisierung beim PC angefordert …");
+    const r = await fetch(SYNC_SERVER + "/" + encodeURIComponent(topic), {method: "POST", body: "sync"});
+    if (!r.ok) throw new Error("Signal " + r.status);
+    for (let i = 0; i < 16; i++) {
+      await new Promise(res => setTimeout(res, 6000));
+      const d = await binLesen();
+      if (stempel(d) !== vorher) { D = Object.assign({index: [], kandidaten: [], positionen: [], konto: {}, status: {}}, d); zeichne(); return; }
+      if (d.status && d.status.laeuft) meldung("⏳ Vollscan läuft beim PC, Daten folgen automatisch …");
+    }
+    meldung("Der PC hat nicht geantwortet. Läuft der Scanner (Aktien-Watcher_starten.bat)? Die Daten folgen sonst beim nächsten regulären Abgleich.");
+  } catch (e) { meldung("Sync fehlgeschlagen: " + esc(e.message)); }
+  finally { syncLaeuft = false; btn.disabled = false; }
+}
+$("#btnDepot").onclick = neuLaden;
 $("#btnVoll").onclick = async () => { if (!confirm("Vollscan starten? Das dauert einige Minuten.")) return;
   await fetch("/api/refresh", {method: "POST", body: JSON.stringify({was: "voll"})}); setTimeout(laden, 1500); };
 
