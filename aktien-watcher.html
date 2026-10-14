@@ -64,7 +64,7 @@
   svg.spark { width: 90px; height: 28px; flex: none; }
   .register { display: none; } .register.aktiv { display: block; }
   /* 2026-10-14: Tab-Leiste wie im Reisetagebuch: gleich breite Felder, aktiver Tab als Amber-Pille, Icons gleichmaessig verteilt */
-  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #10141b; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #10141b; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); z-index: 5; }
   nav button { background: none; border: none; color: #8d9098; font: inherit; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 3px; padding: 7px 4px; cursor: pointer; border-radius: 16px; min-width: 0; }
@@ -77,6 +77,14 @@
   .info p, .info li { font-size: 13.5px; line-height: 1.5; } .info ul { padding-left: 18px; }
   table.mini { width: 100%; border-collapse: collapse; font-size: 12.5px; } table.mini td, table.mini th { padding: 5px 6px; border-bottom: 1px solid #1d2431; text-align: right; }
   table.mini th:first-child, table.mini td:first-child { text-align: left; } table.mini th { color: var(--text-dim); font-weight: 500; }
+  .rang { font-size: 11px; color: var(--text-dim); min-width: 22px; text-align: center; }
+  .scorebalken { height: 4px; border-radius: 3px; background: #222a38; overflow: hidden; margin-top: 6px; }
+  .scorebalken i { display: block; height: 100%; border-radius: 3px; }
+  .bewkopf { cursor: pointer; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+  .legende { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 0; } .legende .f { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .legende .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gvzeile { display: grid; grid-template-columns: 78px 1fr 58px; gap: 8px; align-items: center; font-size: 12.5px; padding: 3px 0; }
+  .gvbalken { position: relative; height: 10px; background: #1b2230; border-radius: 4px; } .gvbalken i { position: absolute; top: 0; bottom: 0; border-radius: 3px; } .gvbalken b { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--grau); }
   .leer { text-align: center; color: var(--text-dim); padding: 28px 10px; font-size: 14px; }
 </style>
 </head>
@@ -101,9 +109,15 @@
 
   <!-- Kandidaten -->
   <section class="register" id="r-kandidaten">
+    <div class="chips" id="filterSort"></div>
     <div class="chips" id="filterAmpel"></div>
     <div class="chips" id="filterMarkt"></div>
     <div id="kandidatenliste"></div>
+  </section>
+
+  <!-- Dashboard -->
+  <section class="register" id="r-dashboard">
+    <div id="dashboard"></div>
   </section>
 
   <!-- Depot -->
@@ -128,6 +142,13 @@
       <li><b>Grün:</b> kein rotes Kriterium und mindestens 5 grün (mind. 60 % der bewertbaren). <b>Rot:</b> kritisches Kriterium rot (Bilanz, sinkende Schätzungen, Warn-Schlagzeile), Umsatz <i>und</i> Gewinn rot, oder zwei Rote. Sonst <b>gelb</b>.</li>
       <li><b>Grenzen:</b> «Neue Produkte» und «Innovation» werden nur über Schlagzeilen-Stichwörter und den Forschungsanteil geschätzt – nicht inhaltlich gelesen. Daten von Yahoo Finance können Lücken oder Fehler haben. Lies die Schlagzeilen selbst.</li>
     </ul></div>
+    <h2>Score und Ranking</h2>
+    <div class="karte info"><ul>
+      <li><b>Kriterien erfüllt</b> = Anzahl der grünen Kriterien von den bewertbaren. Kriterien ohne Daten («k. A.») zählen nicht mit. Bei Kandidaten sind es bis zu 10, im Depot bis zu 9 (dort entfällt «Ursache des Einbruchs»).</li>
+      <li><b>Score (0–100)</b> = gewichteter Durchschnitt: Grün 1, Gelb ½, Rot 0. Die Ampel bleibt regelbasiert; der Score sortiert innerhalb einer Ampelfarbe das Ranking.</li>
+      <li><b>Gewichte (Standard):</b> Gewinnwachstum 18, Umsatzwachstum 14, Schätzungsrevisionen 14, Bilanz 12, Betriebsmarge 10, Bewertung 10, Analysten 8, Ursache 8, Innovation 3, Nachrichten 3.</li>
+      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Sie lassen sich in <code>aktien_watcher_config.json</code> unter «gewichte» ändern.</li>
+    </ul></div>
     <h2>Index-Statistik (Backtest, Hold-out, 3 Monate nach Signal)</h2>
     <div class="karte"><table class="mini" id="statTab"></table>
       <div class="dim klein" style="margin-top:8px">Trefferquote = Anteil positiver 3-Monats-Renditen nach Kosten. Vorsprung = Mehrertrag gegenüber dem Durchschnittstag. n = Anzahl Ereignisse.</div></div>
@@ -137,6 +158,7 @@
 <nav>
   <button data-r="uebersicht" class="aktiv"><span class="ic">📊</span>Übersicht</button>
   <button data-r="kandidaten"><span class="ic">🚦</span>Kandidaten</button>
+  <button data-r="dashboard"><span class="ic">📈</span>Dashboard</button>
   <button data-r="depot"><span class="ic">💼</span>Depot</button>
   <button data-r="info"><span class="ic">ℹ️</span>Info</button>
 </nav>
@@ -194,6 +216,10 @@ const pc = x => x == null ? "–" : (x > 0 ? "+" : x < 0 ? "−" : "") + Math.ab
 const kl = x => x == null ? "" : (x > 0 ? "pos" : x < 0 ? "neg" : "dim");
 const chf = x => x == null ? "–" : (x < 0 ? "−" : "") + Math.abs(x).toLocaleString("de-CH", {minimumFractionDigits: 0, maximumFractionDigits: 0}) + " CHF";
 const ampelText = {gruen: "Grün", gelb: "Gelb", rot: "Rot"};
+const scoreFarbe = sc => sc == null ? "var(--grau)" : sc >= 70 ? "var(--pos)" : sc >= 45 ? "var(--warn)" : "var(--neg)";
+const scoreBalken = sc => sc == null ? "" : `<div class="scorebalken"><i style="width:${sc}%;background:${scoreFarbe(sc)}"></i></div>`;
+const FARBEN = ["#d4a24e", "#5aa9bb", "#9b8ad1", "#4caf7d", "#e0785a", "#c58bb0", "#7aa0d6", "#b8b36a"];
+let fSort = "rang", pendingKauf = null;
 
 // 2026-10-14: Kursverlauf diskret: duenne, gedaempfte Linie, feine Flaeche, nur der letzte Punkt faerbt (gruen/rot)
 function spark(v, ref) {
@@ -262,7 +288,7 @@ function zeichne() {
   if (D.gekuerzt) b += '<div class="banner">Hinweis: Liste wegen Grössenlimit gekürzt (schwächste Kandidaten ausgeblendet).</div>';
   if (!D.stand && !(D.status && D.status.laeuft)) b += '<div class="banner">Noch keine Daten. Der erste Scan startet automatisch oder mit «↻ Vollscan».</div>';
   $("#banner").innerHTML = b;
-  zeichneIndizes(); zeichneAmpelSumme(); zeichneDepotKurz(); zeichneKandidaten(); zeichneDepot(); zeichneStatTab();
+  zeichneIndizes(); zeichneAmpelSumme(); zeichneDepotKurz(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); zeichneStatTab();
 }
 
 function zeichneIndizes() {
@@ -301,19 +327,23 @@ function zeichneDepotKurz() {
 
 function zeichneKandidaten() {
   const ampeln = ["alle", "gruen", "gelb", "rot"], maerkte = ["alle", ...new Set((D.kandidaten || []).map(x => x.markt))];
+  $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Ampel + Score)"], ["einbruch", "Stärkster Einbruch"]].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
   $("#filterAmpel").innerHTML = ampeln.map(a => `<button class="chip ${fAmpel === a ? "aktiv" : ""}" data-a="${a}">${a === "alle" ? "Alle" : ampelText[a]}</button>`).join("");
   $("#filterMarkt").innerHTML = maerkte.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Märkte" : esc(m)}</button>`).join("");
-  const liste = (D.kandidaten || []).filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || x.markt === fMarkt));
+  const rang = {}; (D.kandidaten || []).forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Ampel, dann Score sortiert
+  let liste = (D.kandidaten || []).filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || x.markt === fMarkt));
+  if (fSort === "einbruch") liste = liste.slice().sort((a, b) => (a.monat_pct ?? 0) - (b.monat_pct ?? 0));
   if (!liste.length) { $("#kandidatenliste").innerHTML = '<div class="leer">Keine Kandidaten für diesen Filter.</div>'; return; }
   $("#kandidatenliste").innerHTML = liste.map(x => {
     const imDepot = (D.positionen || []).some(p => p.ticker === x.ticker);
     const kr = x.kriterien.map(k => `<div class="krit"><span class="punkt ${esc(k.status)}" style="margin-top:4px"></span><div class="t"><b>${esc(k.titel)}</b> · ${esc(k.wert)}<div class="dim">${esc(k.text)}</div></div></div>`).join("");
     const nw = (x.news || []).map(n => `<div>${/^https?:\/\//.test(n.link || "") ? `<a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.titel)}</a>` : esc(n.titel)} <span class="dim klein">${esc(n.quelle)} ${esc(n.zeit)}</span></div>`).join("");
     return `<div class="karte ${offen.has(x.ticker) ? "offen" : ""}" data-t="${esc(x.ticker)}">
-      <div class="titel-zeile"><span class="punkt ${esc(x.ampel)}"></span>
+      <div class="titel-zeile"><div style="display:flex;flex-direction:column;align-items:center;gap:5px"><span class="rang">#${rang[x.ticker]}</span><span class="punkt ${esc(x.ampel)}"></span></div>
         <div class="mitte"><div class="name">${esc(x.ticker)} <span class="dim" style="font-weight:400">${esc(x.name)}</span></div>
           <div class="zahlen"><span>${num(x.kurs)} ${esc(x.waehrung)}</span><span class="${kl(x.tag_pct)}">Tag ${pc(x.tag_pct)}</span><span class="${kl(x.woche_pct)}">Woche ${pc(x.woche_pct)}</span><span class="${kl(x.monat_pct)}">Monat ${pc(x.monat_pct)}</span></div>
-          <div>${x.ausloeser.map(a => `<span class="tag">${esc(a.trigger)} · vor ${a.vor_tagen} Tg</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}</div></div>
+          <div class="zahlen" style="margin-top:3px"><span><b style="color:${scoreFarbe(x.score)}">Score ${x.score ?? "–"}</b></span><span>${x.erfuellt ?? "–"} von ${x.bewertbar ?? "–"} Kriterien erfüllt</span></div>${scoreBalken(x.score)}
+          <div style="margin-top:4px">${x.ausloeser.map(a => `<span class="tag">${esc(a.trigger)} · vor ${a.vor_tagen} Tg</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}</div></div>
         ${spark(x.verlauf)}</div>
       <div class="details">
         <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc(x.markt)} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}</div>
@@ -323,6 +353,15 @@ function zeichneKandidaten() {
         <div class="aktionen"><button class="knopf" data-add="${esc(x.ticker)}">+ Ins Depot legen</button></div>
       </div></div>`;
   }).join("");
+}
+
+function bewertungBlock(p) {
+  const b = p.bewertung;
+  if (!b) return '<div class="dim klein" style="margin-top:8px">Bewertung folgt beim nächsten Scan.</div>';
+  const k = p.kauf, wechsel = k && k.ampel && k.ampel !== b.ampel ? ` · bei Kauf ${ampelText[k.ampel] || "–"} (Score ${k.score ?? "–"}) → jetzt ${ampelText[b.ampel]}` : (k && k.ampel ? ` · bei Kauf ${ampelText[k.ampel]} (Score ${k.score ?? "–"})` : "");
+  const kr = (b.kriterien || []).map(c => `<div class="krit"><span class="punkt ${esc(c.status)}" style="margin-top:4px"></span><div class="t"><b>${esc(c.titel)}</b> · ${esc(c.wert)}<div class="dim">${esc(c.text)}</div></div></div>`).join("");
+  return `<div class="bewkopf"><div class="zeile"><span><span class="punkt ${esc(b.ampel)}"></span> <b style="color:${scoreFarbe(b.score)}">Score ${b.score ?? "–"}</b> · ${b.erfuellt} von ${b.bewertbar} Kriterien erfüllt</span><span class="dim klein">Details ▾</span></div>
+    ${scoreBalken(b.score)}<div class="dim klein" style="margin-top:4px">Aktuelle Bewertung${wechsel}</div></div><div class="details" style="display:none;margin-top:0;border-top:none">${kr}</div>`;
 }
 
 function zeichneDepot() {
@@ -344,8 +383,55 @@ function zeichneDepot() {
       ${p.notiz ? `<div class="dim klein" style="margin-top:4px">📝 ${esc(p.notiz)}</div>` : ""}
       <div class="dim klein">seit ${esc(p.datum || "–")}</div></div>${spark(p.verlauf)}</div>
       ${kursChart(p.verlauf, p.einstand)}
+      ${bewertungBlock(p)}
       <div class="aktionen"><button class="knopf sek" data-edit="${esc(p.ticker)}">Bearbeiten</button><button class="knopf gefahr" data-del="${esc(p.ticker)}">Verkauft / entfernen</button></div></div>`;
   }).join("");
+}
+
+function donut(teile) {
+  const tot = teile.reduce((a, t) => a + t.v, 0) || 1, R = 42, U = 2 * Math.PI * R;
+  let off = 0;
+  const ringe = teile.map((t, i) => { const l = t.v / tot * U; const c = `<circle r="${R}" cx="60" cy="60" fill="none" stroke="${t.f}" stroke-width="16" stroke-dasharray="${l.toFixed(2)} ${(U - l).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 60 60)"/>`; off += l; return c; }).join("");
+  return `<svg viewBox="0 0 120 120" style="width:130px;height:130px;flex:none"><circle r="${R}" cx="60" cy="60" fill="none" stroke="#1b2230" stroke-width="16"/>${ringe}</svg>`;
+}
+
+function zeichneDashboard() {
+  const k = D.konto || {}, pos = (D.positionen || []).filter(p => p.wert_chf != null), el = $("#dashboard");
+  if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
+  const gesamt = (k.wert_chf || 0) + (k.bargeld_chf || 0);
+  let h = `<div class="kacheln">
+    <div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
+    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
+    <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div>
+    <div class="kachel"><span class="dim klein">Investiert / Bargeld</span><div class="w">${gesamt ? Math.round((k.wert_chf || 0) / gesamt * 100) : 0} %<div class="klein dim">Bargeld ${chf(k.bargeld_chf)}</div></div></div></div>`;
+  // Wertentwicklung (heutiger Bestand, rueckgerechnet; Wechselkurs heute)
+  const fx = k.fx || {}, serien = pos.filter(p => p.verlauf && p.verlauf.length > 2);
+  if (serien.length) {
+    const n = Math.min(...serien.map(p => p.verlauf.length)), v = [];
+    for (let i = 0; i < n; i++) v.push(serien.reduce((a, p) => a + p.stueck * p.verlauf[p.verlauf.length - n + i] * (fx[p.waehrung] || 1), 0));
+    h += `<h2>Wertentwicklung (heutiger Bestand, ca.)</h2><div class="karte">${kursChart(v.map(x => Math.round(x)), k.einstand_chf)}<div class="dim klein">Rückgerechnet mit den heutigen Stückzahlen und Wechselkursen, in CHF. Gestrichelt: Einstandswert.</div></div>`;
+  }
+  // Verteilung
+  const teile = pos.slice().sort((a, b) => b.wert_chf - a.wert_chf).map((p, i) => ({n: p.ticker, v: p.wert_chf, f: FARBEN[i % FARBEN.length]}));
+  if ((k.bargeld_chf || 0) > 0) teile.push({n: "Bargeld", v: k.bargeld_chf, f: "#5c6575"});
+  const tot = teile.reduce((a, t) => a + t.v, 0) || 1;
+  h += `<h2>Verteilung</h2><div class="karte"><div style="display:flex;gap:14px;align-items:center">${donut(teile)}<div style="flex:1;min-width:0">${teile.map(t => `<div class="legende"><span class="f" style="background:${t.f}"></span><span class="n">${esc(t.n)}</span><span class="dim">${(t.v / tot * 100).toFixed(0)} %</span></div>`).join("")}</div></div></div>`;
+  // Gewinn/Verlust je Position
+  const mx = Math.max(10, ...pos.map(p => Math.abs(p.gewinn_pct || 0)));
+  h += `<h2>Gewinn / Verlust je Position</h2><div class="karte">${pos.slice().sort((a, b) => (b.gewinn_pct || 0) - (a.gewinn_pct || 0)).map(p => {
+    const g = p.gewinn_pct || 0, w = Math.abs(g) / mx * 50;
+    return `<div class="gvzeile"><span class="name" style="font-weight:500">${esc(p.ticker)}</span><div class="gvbalken"><b></b><i style="${g >= 0 ? "left:50%" : "right:50%"};width:${w.toFixed(1)}%;background:${g >= 0 ? "var(--pos)" : "var(--neg)"}"></i></div><span class="${kl(g)}" style="text-align:right">${pc(g)}</span></div>`;
+  }).join("")}</div>`;
+  // Bewertung der Positionen
+  const bw = pos.filter(p => p.bewertung), z = a => bw.filter(p => p.bewertung.ampel === a).length;
+  if (bw.length) {
+    const ver = bw.filter(p => p.kauf && p.kauf.ampel && p.kauf.ampel !== p.bewertung.ampel).map(p =>
+      `<div class="zeile" style="padding:5px 0;font-size:13px"><span><b>${esc(p.ticker)}</b> <span class="dim">${ampelText[p.kauf.ampel]} → ${ampelText[p.bewertung.ampel]}</span></span><span class="${p.bewertung.score >= (p.kauf.score ?? 0) ? "pos" : "neg"}">Score ${p.kauf.score ?? "–"} → ${p.bewertung.score ?? "–"}</span></div>`).join("");
+    h += `<h2>Bewertung der Positionen</h2><div class="kacheln" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kachel"><span class="punkt gruen"></span> Grün<div class="w">${z("gruen")}</div></div><div class="kachel"><span class="punkt gelb"></span> Gelb<div class="w">${z("gelb")}</div></div><div class="kachel"><span class="punkt rot"></span> Rot<div class="w">${z("rot")}</div></div></div>
+      ${ver ? '<div class="karte"><div class="dim klein" style="margin-bottom:4px">Veränderung seit dem Kauf</div>' + ver + '</div>' : ""}`;
+  }
+  el.innerHTML = h;
 }
 
 function zeichneStatTab() {
@@ -363,7 +449,7 @@ function zeichneStatTab() {
 function depotObjekt() {
   const roh = (D.depot && Array.isArray(D.depot.positionen)) ? D.depot.positionen : (D.positionen || []);
   const bar = D.depot && D.depot.bargeld_chf != null ? D.depot.bargeld_chf : ((D.konto || {}).bargeld_chf || 0);
-  return {bargeld_chf: bar, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || ""}))};
+  return {bargeld_chf: bar, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
 }
 async function depotSpeichern(obj) {
   $("#banner").innerHTML = '<div class="banner">Speichere …</div>';
@@ -384,6 +470,7 @@ async function depotSpeichern(obj) {
 }
 function dialogOeffnen(vor) {
   editTicker = vor && vor.edit ? vor.ticker : null;
+  pendingKauf = vor && vor.kauf && !vor.edit ? vor.kauf : null;
   $("#dlgTitel").textContent = editTicker ? "Position bearbeiten" : "Position hinzufügen";
   $("#fTicker").value = vor.ticker || ""; $("#fTicker").readOnly = !!editTicker;
   $("#fName").value = vor.name || ""; $("#fStueck").value = vor.stueck || ""; $("#fEinstand").value = vor.einstand || "";
@@ -397,6 +484,7 @@ $("#formPos").addEventListener("submit", ev => {
   const p = {ticker: $("#fTicker").value.trim().toUpperCase(), name: $("#fName").value.trim(), stueck: parseFloat($("#fStueck").value),
              einstand: parseFloat($("#fEinstand").value), datum: $("#fDatum").value, waehrung: $("#fWaehrung").value.trim().toUpperCase(), notiz: $("#fNotiz").value.trim()};
   if (!p.ticker || !(p.stueck > 0) || !(p.einstand > 0)) return;
+  if (pendingKauf) p.kauf = pendingKauf;                 // Bewertung zum Kaufzeitpunkt merken (Vergleich im Depot)
   const i = o.positionen.findIndex(x => x.ticker === p.ticker);
   if (i >= 0) o.positionen[i] = Object.assign(o.positionen[i], p); else o.positionen.push(p);
   depotSpeichern(o);
@@ -405,13 +493,17 @@ $("#formPos").addEventListener("submit", ev => {
 /* ---- Ereignisse ---- */
 document.addEventListener("click", ev => {
   const t = ev.target;
+  const bk = t.closest(".bewkopf");
+  if (bk) { const k = bk.nextElementSibling; k.style.display = k.style.display === "block" ? "none" : "block"; return; }
   const nav = t.closest("nav button");
   if (nav) { document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b === nav));
     document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); window.scrollTo(0, 0); return; }
+  if (t.dataset.s) { fSort = t.dataset.s; zeichneKandidaten(); return; }
   if (t.dataset.a) { fAmpel = t.dataset.a; zeichneKandidaten(); return; }
   if (t.dataset.m) { fMarkt = t.dataset.m; zeichneKandidaten(); return; }
   if (t.dataset.add) { const x = D.kandidaten.find(k => k.ticker === t.dataset.add);
-    dialogOeffnen({ticker: x.ticker, name: x.name, einstand: x.kurs, waehrung: x.waehrung}); return; }
+    dialogOeffnen({ticker: x.ticker, name: x.name, einstand: x.kurs, waehrung: x.waehrung,
+      kauf: {ampel: x.ampel, score: x.score, erfuellt: x.erfuellt, bewertbar: x.bewertbar, datum: new Date().toISOString().slice(0, 10)}}); return; }
   if (t.dataset.edit) { const p = D.positionen.find(k => k.ticker === t.dataset.edit); dialogOeffnen(Object.assign({edit: true}, p)); return; }
   if (t.dataset.del) { if (confirm(t.dataset.del + " aus dem Depot entfernen?")) { const o = depotObjekt(); o.positionen = o.positionen.filter(p => p.ticker !== t.dataset.del); depotSpeichern(o); } return; }
   const kopf = t.closest(".titel-zeile");
