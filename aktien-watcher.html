@@ -22,7 +22,12 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-variant-numeric: tabular-nums; }
-  main { max-width: 720px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px 110px; }
+  /* 2026-10-14: Menueleiste fest verankert: Seite scrollt nur im Inhaltsbereich (#seite), die Leiste ist kein 'fixed' mehr und springt nicht mehr
+     (iOS verschiebt fixed-Elemente, wenn die Safari-Leiste ein-/ausblendet). */
+  html, body { height: 100%; overflow: hidden; }
+  body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+  #seite { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  main { max-width: 720px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 16px 28px; }
   h1 { font-size: 20px; margin: 0; font-weight: 600; }
   h2 { font-size: 15px; margin: 22px 0 10px; font-weight: 600; color: var(--text); }
   .dim { color: var(--text-dim); } .klein { font-size: 12px; }
@@ -64,7 +69,7 @@
   svg.spark { width: 90px; height: 28px; flex: none; }
   .register { display: none; } .register.aktiv { display: block; }
   /* 2026-10-14: Tab-Leiste wie im Reisetagebuch: gleich breite Felder, aktiver Tab als Amber-Pille, Icons gleichmaessig verteilt */
-  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #10141b; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+  nav { flex: none; position: relative; background: #10141b; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
     padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); border-top: 1px solid var(--border); z-index: 5; }
   nav button { background: none; border: none; color: #8d9098; font: inherit; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 3px; padding: 7px 4px; cursor: pointer; border-radius: 16px; min-width: 0; }
@@ -89,7 +94,7 @@
 </style>
 </head>
 <body>
-<main>
+<div id="seite"><main>
   <div class="kopf">
     <div style="display:flex;align-items:center;gap:10px"><img src="icon-192.png" alt="" width="34" height="34" style="border-radius:8px;flex:none"><div><h1>Aktien-Watcher</h1><div class="dim klein" id="stand">lädt …</div></div></div>
     <div style="display:flex;gap:6px">
@@ -123,7 +128,7 @@
   <!-- Depot -->
   <section class="register" id="r-depot">
     <div id="konto"></div>
-    <div class="aktionen" style="margin:0 0 12px"><button class="knopf" id="btnNeuePos">+ Position hinzufügen</button><button class="knopf sek" id="btnBargeld">Bargeld ändern</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
+    <div class="aktionen" style="margin:0 0 12px"><button class="knopf" id="btnNeuePos">+ Position hinzufügen</button><button class="knopf sek" id="btnBargeld">Einzahlen / Auszahlen</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
     <div id="positionen"></div>
   </section>
 
@@ -135,6 +140,11 @@
       <p><b>Einzeltitel (nicht als Gewinnquelle belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte <i>keinen</i> Vorteil (im Hold-out negativ). Die Ampel unten basiert auf aktuellen Kennzahlen, die sich gratis <i>nicht</i> rückwirkend testen lassen.</p>
       <p>Die Ampel ist eine strukturierte Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
     </div>
+    <h2>Konto und Depot</h2>
+    <div class="karte"><ul>
+      <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto: Mit «Einzahlen / Auszahlen» legst du das Guthaben fest. Es wird <b>nicht</b> zum Depotwert addiert.</li>
+      <li>Beim <b>Ins-Depot-Legen</b> wird der Kaufbetrag (in CHF umgerechnet) vom Konto abgebucht, beim <b>Verkauf</b> wird der Erlös gutgeschrieben. Beides lässt sich im Dialog abschalten. Die Bewegungen stehen im Depot-Tab.</li>
+    </ul></div>
     <h2>Wie kommt die Liste zustande?</h2>
     <div class="karte"><ul>
       <li><b>Universum:</b> alle Titel von SMI, DAX und S&amp;P 500 (rund 560).</li>
@@ -164,7 +174,7 @@
     <div class="karte"><table class="mini" id="statTab"></table>
       <div class="dim klein" style="margin-top:8px">Trefferquote = Anteil positiver 3-Monats-Renditen nach Kosten. Vorsprung = Mehrertrag gegenüber dem Durchschnittstag. n = Anzahl Ereignisse.</div></div>
   </section>
-</main>
+</main></div>
 
 <nav>
   <button data-r="uebersicht" class="aktiv"><span class="ic">📊</span>Übersicht</button>
@@ -184,6 +194,7 @@
     <label>Währung</label><input id="fWaehrung" maxlength="3" autocapitalize="characters">
     <label>Datum</label><input id="fDatum" type="date">
     <label>Notiz (z. B. Grund für den Kauf)</label><textarea id="fNotiz" rows="2"></textarea>
+    <label style="display:flex;gap:8px;align-items:flex-start;color:var(--text);margin-top:12px"><input type="checkbox" id="fBuchen" style="width:auto;margin-top:3px"><span id="fBuchenText" class="klein"></span></label>
     <div class="aktionen"><button class="knopf" value="ok">Speichern</button><button class="knopf sek" value="x" formnovalidate id="fAbbr">Abbrechen</button></div>
   </form>
 </dialog>
@@ -385,14 +396,21 @@ function bewertungBlock(p) {
     ${scoreBalken(b.score)}<div class="dim klein" style="margin-top:4px">Aktuelle Bewertung${wechsel}</div></div><div class="details" style="display:none;margin-top:0;border-top:none">${kr}</div>`;
 }
 
+function buchungenKarte() {
+  const b = ((D.depot && D.depot.buchungen) || []).slice(0, 6);
+  if (!b.length) return '<div class="dim klein" style="margin-bottom:10px">Noch keine Kontobewegungen. «Einzahlen / Auszahlen» legt das Guthaben fest, Käufe und Verkäufe buchen automatisch.</div>';
+  return '<div class="karte"><div class="dim klein" style="margin-bottom:4px">Letzte Kontobewegungen</div>' + b.map(x =>
+    `<div class="zeile" style="padding:4px 0;font-size:13px"><span><span class="dim klein">${esc(x.datum)}</span> <b>${esc(x.typ)}</b> <span class="dim">${esc(x.text || "")}</span></span><span class="${kl(x.betrag)}">${x.betrag > 0 ? "+" : x.betrag < 0 ? "−" : ""}${chf(Math.abs(x.betrag)).replace(" CHF", "")}</span></div>`).join("") + '</div>';
+}
+
 function zeichneDepot() {
   const k = D.konto || {}, pos = D.positionen || [];
   $("#konto").innerHTML = `<div class="kacheln">
     <div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
     <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
     <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Bargeld / Gesamt</span><div class="w">${chf(k.bargeld_chf)}<div class="klein dim">${chf((k.wert_chf || 0) + (k.bargeld_chf || 0))}</div></div></div></div>
-    <div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>`;
+    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${(k.bargeld_chf || 0) < 0 ? "neg" : ""}">${chf(k.bargeld_chf)}</div><div class="klein dim">Verrechnungskonto, nicht im Depotwert</div></div></div>
+    <div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
   if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen.</div>'; return; }
   $("#positionen").innerHTML = pos.map(p => {
     const kand = (D.kandidaten || []).find(x => x.ticker === p.ticker);
@@ -419,12 +437,11 @@ function donut(teile) {
 function zeichneDashboard() {
   const k = D.konto || {}, pos = (D.positionen || []).filter(p => p.wert_chf != null), el = $("#dashboard");
   if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
-  const gesamt = (k.wert_chf || 0) + (k.bargeld_chf || 0);
   let h = `<div class="kacheln">
     <div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
     <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
     <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Investiert / Bargeld</span><div class="w">${gesamt ? Math.round((k.wert_chf || 0) / gesamt * 100) : 0} %<div class="klein dim">Bargeld ${chf(k.bargeld_chf)}</div></div></div></div>`;
+    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${(k.bargeld_chf || 0) < 0 ? "neg" : ""}">${chf(k.bargeld_chf)}</div><div class="klein dim">getrennt vom Depotwert</div></div></div>`;
   // Wertentwicklung (heutiger Bestand, rueckgerechnet; Wechselkurs heute)
   const fx = k.fx || {}, serien = pos.filter(p => p.verlauf && p.verlauf.length > 2);
   if (serien.length) {
@@ -434,9 +451,8 @@ function zeichneDashboard() {
   }
   // Verteilung
   const teile = pos.slice().sort((a, b) => b.wert_chf - a.wert_chf).map((p, i) => ({n: p.ticker, v: p.wert_chf, f: FARBEN[i % FARBEN.length]}));
-  if ((k.bargeld_chf || 0) > 0) teile.push({n: "Bargeld", v: k.bargeld_chf, f: "#5c6575"});
   const tot = teile.reduce((a, t) => a + t.v, 0) || 1;
-  h += `<h2>Verteilung</h2><div class="karte"><div style="display:flex;gap:14px;align-items:center">${donut(teile)}<div style="flex:1;min-width:0">${teile.map(t => `<div class="legende"><span class="f" style="background:${t.f}"></span><span class="n">${esc(t.n)}</span><span class="dim">${(t.v / tot * 100).toFixed(0)} %</span></div>`).join("")}</div></div></div>`;
+  h += `<h2>Verteilung der Titel</h2><div class="karte"><div style="display:flex;gap:14px;align-items:center">${donut(teile)}<div style="flex:1;min-width:0">${teile.map(t => `<div class="legende"><span class="f" style="background:${t.f}"></span><span class="n">${esc(t.n)}</span><span class="dim">${(t.v / tot * 100).toFixed(0)} %</span></div>`).join("")}</div></div></div>`;
   // Gewinn/Verlust je Position
   const mx = Math.max(10, ...pos.map(p => Math.abs(p.gewinn_pct || 0)));
   h += `<h2>Gewinn / Verlust je Position</h2><div class="karte">${pos.slice().sort((a, b) => (b.gewinn_pct || 0) - (a.gewinn_pct || 0)).map(p => {
@@ -470,7 +486,8 @@ function zeichneStatTab() {
 function depotObjekt() {
   const roh = (D.depot && Array.isArray(D.depot.positionen)) ? D.depot.positionen : (D.positionen || []);
   const bar = D.depot && D.depot.bargeld_chf != null ? D.depot.bargeld_chf : ((D.konto || {}).bargeld_chf || 0);
-  return {bargeld_chf: bar, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
+  const bu = (D.depot && Array.isArray(D.depot.buchungen)) ? D.depot.buchungen : [];
+  return {bargeld_chf: bar, buchungen: bu, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
 }
 async function depotSpeichern(obj) {
   $("#banner").innerHTML = '<div class="banner">Speichere …</div>';
@@ -480,7 +497,7 @@ async function depotSpeichern(obj) {
       if (!r.ok) throw new Error("Server " + r.status);
     } else {
       const rec = await binLesen();                       // frisch lesen, damit Scanner-Daten nicht überschrieben werden
-      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, positionen: obj.positionen};
+      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, buchungen: (obj.buchungen || []).slice(0, 50), positionen: obj.positionen};
       const alt = {}; (rec.positionen || []).forEach(p => alt[p.ticker] = p);
       rec.positionen = obj.positionen.map(p => Object.assign({}, alt[p.ticker] || {}, p));   // neue Position sofort sichtbar, Kurs folgt beim nächsten Scan
       rec.konto = Object.assign(rec.konto || {}, {bargeld_chf: obj.bargeld_chf});
@@ -489,6 +506,18 @@ async function depotSpeichern(obj) {
   } catch (e) { alert("Speichern fehlgeschlagen: " + e.message); }
   await laden();
 }
+const fxw = w => { const f = (D.konto || {}).fx || {}; return w === "CHF" ? 1 : (f[w] || 1); };
+const runde2 = x => Math.round(x * 100) / 100;
+function buchen(o, typ, text, betrag) {
+  o.bargeld_chf = runde2((o.bargeld_chf || 0) + betrag);
+  o.buchungen = [{datum: new Date().toISOString().slice(0, 10), typ, text, betrag: runde2(betrag)}].concat(o.buchungen || []).slice(0, 50);
+}
+function buchenHinweis() {
+  const st = parseFloat($("#fStueck").value), ep = parseFloat($("#fEinstand").value), w = $("#fWaehrung").value.trim().toUpperCase() || "CHF";
+  const b = st > 0 && ep > 0 ? st * ep * fxw(w) : null;
+  $("#fBuchenText").textContent = "Kaufbetrag " + (b == null ? "" : "(ca. " + chf(b) + ") ") + "vom Konto abbuchen (Kontostand " + chf((D.konto || {}).bargeld_chf) + ")";
+}
+["fStueck", "fEinstand", "fWaehrung"].forEach(id => document.addEventListener("input", ev => { if (ev.target.id === id) buchenHinweis(); }));
 function dialogOeffnen(vor) {
   editTicker = vor && vor.edit ? vor.ticker : null;
   pendingKauf = vor && vor.kauf && !vor.edit ? vor.kauf : null;
@@ -497,6 +526,8 @@ function dialogOeffnen(vor) {
   $("#fName").value = vor.name || ""; $("#fStueck").value = vor.stueck || ""; $("#fEinstand").value = vor.einstand || "";
   $("#fWaehrung").value = vor.waehrung || ""; $("#fDatum").value = vor.datum || new Date().toISOString().slice(0, 10);
   $("#fNotiz").value = vor.notiz || "";
+  $("#fBuchen").checked = !editTicker;                   // neue Position: standardmässig vom Konto abbuchen; Korrektur: nicht
+  buchenHinweis();
   $("#dlgPos").showModal();
 }
 $("#formPos").addEventListener("submit", ev => {
@@ -507,6 +538,11 @@ $("#formPos").addEventListener("submit", ev => {
   if (!p.ticker || !(p.stueck > 0) || !(p.einstand > 0)) return;
   if (pendingKauf) p.kauf = pendingKauf;                 // Bewertung zum Kaufzeitpunkt merken (Vergleich im Depot)
   const i = o.positionen.findIndex(x => x.ticker === p.ticker);
+  if ($("#fBuchen").checked) {
+    const b = p.stueck * p.einstand * fxw(p.waehrung || "CHF");
+    if (b > (o.bargeld_chf || 0) && !confirm("Der Kontostand (" + chf(o.bargeld_chf) + ") reicht für " + chf(b) + " nicht aus. Trotzdem kaufen? Das Konto wird dann negativ.")) return;
+    buchen(o, "Kauf", p.ticker + " " + p.stueck + " Stk.", -b);
+  }
   if (i >= 0) o.positionen[i] = Object.assign(o.positionen[i], p); else o.positionen.push(p);
   depotSpeichern(o);
 });
@@ -518,7 +554,7 @@ document.addEventListener("click", ev => {
   if (bk) { const k = bk.nextElementSibling; k.style.display = k.style.display === "block" ? "none" : "block"; return; }
   const nav = t.closest("nav button");
   if (nav) { document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b === nav));
-    document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); window.scrollTo(0, 0); return; }
+    document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); $("#seite").scrollTo(0, 0); return; }
   if (t.dataset.s) { fSort = t.dataset.s; zeichneKandidaten(); return; }
   if (t.dataset.a) { fAmpel = t.dataset.a; zeichneKandidaten(); return; }
   if (t.dataset.m) { fMarkt = t.dataset.m; zeichneKandidaten(); return; }
@@ -526,7 +562,14 @@ document.addEventListener("click", ev => {
     dialogOeffnen({ticker: x.ticker, name: x.name, einstand: x.kurs, waehrung: x.waehrung,
       kauf: {ampel: x.ampel, score: x.score, erfuellt: x.erfuellt, bewertbar: x.bewertbar, datum: new Date().toISOString().slice(0, 10)}}); return; }
   if (t.dataset.edit) { const p = D.positionen.find(k => k.ticker === t.dataset.edit); dialogOeffnen(Object.assign({edit: true}, p)); return; }
-  if (t.dataset.del) { if (confirm(t.dataset.del + " aus dem Depot entfernen?")) { const o = depotObjekt(); o.positionen = o.positionen.filter(p => p.ticker !== t.dataset.del); depotSpeichern(o); } return; }
+  if (t.dataset.del) {
+    const p = D.positionen.find(x => x.ticker === t.dataset.del); if (!p) return;
+    const v = prompt(p.ticker + " verkaufen / entfernen.\nVerkaufspreis je Stück in " + p.waehrung + " (aktuell " + num(p.kurs) + "). Der Erlös wird dem Konto gutgeschrieben.\nLeer lassen = nur entfernen, ohne Gutschrift.", p.kurs ?? "");
+    if (v === null) return;
+    const preis = parseFloat(String(v).replace(/'/g, "").replace(",", "."));
+    const o = depotObjekt(); o.positionen = o.positionen.filter(x => x.ticker !== p.ticker);
+    if (preis > 0) buchen(o, "Verkauf", p.ticker + " " + p.stueck + " Stk. à " + num(preis), p.stueck * preis * fxw(p.waehrung));
+    depotSpeichern(o); return; }
   const kopf = t.closest(".titel-zeile");
   if (kopf && kopf.closest(".karte[data-t]")) { const k = kopf.closest(".karte"); const id = k.dataset.t; offen.has(id) ? offen.delete(id) : offen.add(id); k.classList.toggle("offen"); }
 });
@@ -546,13 +589,18 @@ $("#btnImport").onclick = () => $("#fileImport").click();
 $("#fileImport").onchange = async ev => {
   const f = ev.target.files[0]; if (!f) return;
   try { const o = JSON.parse(await f.text()); if (!Array.isArray(o.positionen)) throw new Error("Format");
-    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, positionen: o.positionen});
+    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, buchungen: o.buchungen || [], positionen: o.positionen});
   } catch (e) { alert("Datei nicht lesbar: " + e.message); }
   ev.target.value = "";
 };
 $("#btnNeuePos").onclick = () => dialogOeffnen({});
-$("#btnBargeld").onclick = () => { const v = prompt("Bargeld in CHF:", (D.konto || {}).bargeld_chf || 0); if (v === null) return;
-  const o = depotObjekt(); o.bargeld_chf = parseFloat(String(v).replace(/'/g, "")) || 0; depotSpeichern(o); };
+$("#btnBargeld").onclick = () => {
+  const v = prompt("Konto (CHF), aktuell " + chf((D.konto || {}).bargeld_chf) + ".\nBetrag eingeben: positiv = Einzahlung, negativ = Auszahlung.\nMit = davor den Kontostand direkt setzen (z. B. =5000).", "");
+  if (v === null || String(v).trim() === "") return;
+  const s = String(v).trim().replace(/'/g, "").replace(",", "."), o = depotObjekt();
+  if (s.startsWith("=")) { const n = parseFloat(s.slice(1)); if (isNaN(n)) return; buchen(o, "Korrektur", "Kontostand gesetzt", n - (o.bargeld_chf || 0)); }
+  else { const n = parseFloat(s); if (isNaN(n) || n === 0) return; buchen(o, n > 0 ? "Einzahlung" : "Auszahlung", "", n); }
+  depotSpeichern(o); };
 $("#btnDepot").onclick = async () => {
   if (MODUS === "lokal") { await fetch("/api/refresh", {method: "POST", body: JSON.stringify({was: "depot"})}); setTimeout(laden, 2500); }
   else laden();
