@@ -149,8 +149,9 @@
     </ul></div>
     <h2>Konto und Depot</h2>
     <div class="karte"><ul>
-      <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto: Mit «Einzahlen / Auszahlen» legst du das Guthaben fest. Es wird <b>nicht</b> zum Depotwert addiert.</li>
+      <li>Das <b>Konto</b> ist ein virtuelles Verrechnungskonto: Mit «Einzahlen / Auszahlen» legst du die Einzahlung fest (einmalig). Der <b>Kontostand</b> sinkt mit jedem Kauf um den Einstand und wird <b>nicht</b> zum Depotwert addiert.</li>
       <li>Beim <b>Ins-Depot-Legen</b> wird der Kaufbetrag (in CHF umgerechnet) vom Konto abgebucht, beim <b>Verkauf</b> wird der Erlös gutgeschrieben. Beides lässt sich im Dialog abschalten. Die Bewegungen stehen im Depot-Tab.</li>
+      <li><b>Einstand Depot</b> = Summe der gekauften Titel zum Kaufpreis. <b>Depotwert (IST)</b> = aktueller Marktwert derselben Titel. Gewinn/Verlust = Depotwert − Einstand.</li>
     </ul></div>
     <h2>Wie kommt die Liste zustande?</h2>
     <div class="karte"><ul>
@@ -314,6 +315,7 @@ function zeichne() {
   if (D.status && D.status.fehler) b += '<div class="banner fehler">Fehler im Hintergrund: ' + esc(D.status.fehler) + '</div>';
   const alter = minutenSeit(D.depot_stand || D.stand);
   if (alter !== null && alter > 120) b += '<div class="banner fehler">Daten sind ' + (alter >= 1440 ? Math.round(alter / 1440) + " Tage" : Math.round(alter / 60) + " Std.") + ' alt. Läuft der Scanner auf dem PC?</div>';
+  if (D.hinweis) b += '<div class="banner fehler">' + esc(D.hinweis) + '</div>';
   if (D.gekuerzt) b += '<div class="banner">Hinweis: Liste wegen Grössenlimit gekürzt (schwächste Kandidaten ausgeblendet).</div>';
   if (!D.stand && !(D.status && D.status.laeuft)) b += '<div class="banner">Noch keine Daten. Der erste Scan startet automatisch oder mit «↻ Vollscan».</div>';
   $("#banner").innerHTML = b;
@@ -403,6 +405,27 @@ function bewertungBlock(p) {
     ${scoreBalken(b.score)}<div class="dim klein" style="margin-top:4px">Aktuelle Bewertung${wechsel}</div></div><div class="details" style="display:none;margin-top:0;border-top:none">${kr}</div>`;
 }
 
+const EINZAHL_TYPEN = ["Einzahlung", "Auszahlung", "Korrektur"];
+function einzahlungInfo(k) {
+  const d = D.depot || {};
+  if (d.einzahlung_chf != null) return {v: d.einzahlung_chf, abgeleitet: false};
+  const bu = (d.buchungen || []).filter(x => EINZAHL_TYPEN.includes(x.typ));
+  if (bu.length) return {v: runde2(bu.reduce((a, x) => a + x.betrag, 0)), abgeleitet: false};
+  return {v: runde2((k.bargeld_chf || 0) + (k.einstand_chf || 0)), abgeleitet: true};   // Kontostand + Einstand der Titel
+}
+// Einheitliche Kontoübersicht (Dashboard + Depot): Einzahlung → Kontostand, Einstand → Depotwert (IST)
+function kontoKacheln(k) {
+  const e = einzahlungInfo(k);
+  return `<div class="kacheln">
+    <div class="kachel"><span class="dim klein">Einzahlung (einmalig)</span><div class="w">${chf(e.v)}</div><div class="klein dim">${e.abgeleitet ? "abgeleitet aus Konto + Einstand" : "gesamt eingezahlt"}</div></div>
+    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${(k.bargeld_chf || 0) < 0 ? "neg" : ""}">${chf(k.bargeld_chf)}</div><div class="klein dim">Einzahlung − Einstand der Titel</div></div>
+    <div class="kachel"><span class="dim klein">Einstand Depot</span><div class="w">${chf(k.einstand_chf)}</div><div class="klein dim">Summe der gekauften Titel</div></div>
+    <div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(k.wert_chf)}</div><div class="klein dim">aktueller Marktwert</div></div>
+    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
+    <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div></div>
+    <div class="dim klein" style="margin:-2px 0 10px">Kontostand und Depotwert werden nicht addiert: Der Kauf mindert den Kontostand um den Einstand, der Depotwert zeigt den heutigen Marktwert der Titel.</div>`;
+}
+
 function buchungenKarte() {
   const b = ((D.depot && D.depot.buchungen) || []).slice(0, 6);
   if (!b.length) return '<div class="dim klein" style="margin-bottom:10px">Noch keine Kontobewegungen. «Einzahlen / Auszahlen» legt das Guthaben fest, Käufe und Verkäufe buchen automatisch.</div>';
@@ -412,12 +435,7 @@ function buchungenKarte() {
 
 function zeichneDepot() {
   const k = D.konto || {}, pos = D.positionen || [];
-  $("#konto").innerHTML = `<div class="kacheln">
-    <div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
-    <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${(k.bargeld_chf || 0) < 0 ? "neg" : ""}">${chf(k.bargeld_chf)}</div><div class="klein dim">Verrechnungskonto, nicht im Depotwert</div></div></div>
-    <div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
+  $("#konto").innerHTML = kontoKacheln(k) + `<div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
   if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen.</div>'; return; }
   $("#positionen").innerHTML = pos.map(p => {
     const kand = (D.kandidaten || []).find(x => x.ticker === p.ticker);
@@ -444,11 +462,7 @@ function donut(teile) {
 function zeichneDashboard() {
   const k = D.konto || {}, pos = (D.positionen || []).filter(p => p.wert_chf != null), el = $("#dashboard");
   if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>'; return; }
-  let h = `<div class="kacheln">
-    <div class="kachel"><span class="dim klein">Depotwert</span><div class="w">${chf(k.wert_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(k.gewinn_chf)}">${chf(k.gewinn_chf)}<div class="klein">${pc(k.gewinn_pct)}</div></div></div>
-    <div class="kachel"><span class="dim klein">Heute (ca.)</span><div class="w ${kl(k.tag_chf)}">${chf(k.tag_chf)}</div></div>
-    <div class="kachel"><span class="dim klein">Kontostand (frei)</span><div class="w ${(k.bargeld_chf || 0) < 0 ? "neg" : ""}">${chf(k.bargeld_chf)}</div><div class="klein dim">getrennt vom Depotwert</div></div></div>`;
+  let h = kontoKacheln(k);
   // Wertentwicklung (heutiger Bestand, rueckgerechnet; Wechselkurs heute)
   const fx = k.fx || {}, serien = pos.filter(p => p.verlauf && p.verlauf.length > 2);
   if (serien.length) {
@@ -494,7 +508,7 @@ function depotObjekt() {
   const roh = (D.depot && Array.isArray(D.depot.positionen)) ? D.depot.positionen : (D.positionen || []);
   const bar = D.depot && D.depot.bargeld_chf != null ? D.depot.bargeld_chf : ((D.konto || {}).bargeld_chf || 0);
   const bu = (D.depot && Array.isArray(D.depot.buchungen)) ? D.depot.buchungen : [];
-  return {bargeld_chf: bar, buchungen: bu, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
+  return {bargeld_chf: bar, buchungen: bu, einzahlung_chf: (D.depot && D.depot.einzahlung_chf != null) ? D.depot.einzahlung_chf : null, positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
 }
 async function depotSpeichern(obj) {
   $("#banner").innerHTML = '<div class="banner">Speichere …</div>';
@@ -504,7 +518,7 @@ async function depotSpeichern(obj) {
       if (!r.ok) throw new Error("Server " + r.status);
     } else {
       const rec = await binLesen();                       // frisch lesen, damit Scanner-Daten nicht überschrieben werden
-      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, buchungen: (obj.buchungen || []).slice(0, 50), positionen: obj.positionen};
+      rec.depot = {rev: Math.floor(Date.now() / 1000), bargeld_chf: obj.bargeld_chf, buchungen: (obj.buchungen || []).slice(0, 50), einzahlung_chf: obj.einzahlung_chf != null ? obj.einzahlung_chf : null, positionen: obj.positionen};
       const alt = {}; (rec.positionen || []).forEach(p => alt[p.ticker] = p);
       rec.positionen = obj.positionen.map(p => Object.assign({}, alt[p.ticker] || {}, p));   // neue Position sofort sichtbar, Kurs folgt beim nächsten Scan
       rec.konto = Object.assign(rec.konto || {}, {bargeld_chf: obj.bargeld_chf});
@@ -517,6 +531,7 @@ const fxw = w => { const f = (D.konto || {}).fx || {}; return w === "CHF" ? 1 : 
 const runde2 = x => Math.round(x * 100) / 100;
 function buchen(o, typ, text, betrag) {
   o.bargeld_chf = runde2((o.bargeld_chf || 0) + betrag);
+  if (EINZAHL_TYPEN.includes(typ)) o.einzahlung_chf = runde2((o.einzahlung_chf != null ? o.einzahlung_chf : einzahlungInfo(D.konto || {}).v) + betrag);
   o.buchungen = [{datum: new Date().toISOString().slice(0, 10), typ, text, betrag: runde2(betrag)}].concat(o.buchungen || []).slice(0, 50);
 }
 function buchenHinweis() {
@@ -596,7 +611,7 @@ $("#btnImport").onclick = () => $("#fileImport").click();
 $("#fileImport").onchange = async ev => {
   const f = ev.target.files[0]; if (!f) return;
   try { const o = JSON.parse(await f.text()); if (!Array.isArray(o.positionen)) throw new Error("Format");
-    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, buchungen: o.buchungen || [], positionen: o.positionen});
+    if (confirm("Depot mit " + o.positionen.length + " Positionen aus der Datei übernehmen? Das ersetzt das aktuelle Depot.")) await depotSpeichern({bargeld_chf: o.bargeld_chf || 0, buchungen: o.buchungen || [], einzahlung_chf: o.einzahlung_chf != null ? o.einzahlung_chf : null, positionen: o.positionen});
   } catch (e) { alert("Datei nicht lesbar: " + e.message); }
   ev.target.value = "";
 };
