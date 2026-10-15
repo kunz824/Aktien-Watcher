@@ -227,6 +227,15 @@
       <li>Die Einstiegszone wird beim Vollscan berechnet und ändert sich zwischen zwei Scans nicht.</li>
     </ul></div>
 
+    <h2>Stop-Loss</h2>
+    <div class="karte"><ul>
+      <li>Beim Hinzufügen einer Position schlägt die App einen Stop-Loss vor (Feld «Stop-Loss», frei änderbar oder leer lassbar). Er <b>begrenzt das Risiko</b>, er steigert nicht nachweislich den Ertrag.</li>
+      <li><b>Berechnung:</b> Abstand = Faktor × Tagesschwankung (20 Tage) × √10, begrenzt auf 6–25 % unter dem Einstand. Faktor 3.0 bei Score ≥70, 2.5 bei 45–69, 2.0 bei Score &lt;45 oder roter Ampel. Hoher Score = weiter Abstand (der Titel darf atmen), schwacher Titel = enger.</li>
+      <li>Die Maske zeigt Abstand in %, Kurs und das Risiko in CHF (Stück × Abstand). Das Risiko sollte zu deinem Konto passen: bei grossen Positionen den Abstand verkleinern oder weniger Stück kaufen.</li>
+      <li><b>Im Depot:</b> Alarm rot bei Kurs ≤ Stop-Loss, gelb bei weniger als 2 % Abstand. Liegt der Titel mehr als 3 % im Gewinn, schlägt die App vor, den Stop-Loss mit gleichem Abstand zum Höchststand nachzuziehen (nie nach unten). Die Order setzt du selbst beim Broker; die App löst nichts aus.</li>
+      <li><b>Nicht belegt:</b> Die Faktoren sind Erfahrungswerte, nicht backgetestet. Gaps über Nacht können unter dem Stop-Loss eröffnen.</li>
+    </ul></div>
+
     <h2>Konto, Depot und Alarme</h2>
     <div class="karte"><ul>
       <li><b>Kontostand = Einzahlungen − Einstand Depot.</b> Mit «Einzahlungen ändern» (Register Depot) legst du den Gesamtbetrag fest, z. B. 5000, oder zahlst mit + / − einen Betrag ein bzw. aus. Jeder Kauf senkt den Kontostand um den Einstand, jeder Verkauf erhöht ihn um den Erlös. Kontostand und Depotwert werden nie addiert.</li>
@@ -285,6 +294,8 @@
     <label>Stück</label><input id="fStueck" type="number" step="any" min="0" required inputmode="decimal">
     <label>Einstandspreis (in Währung des Titels)</label><input id="fEinstand" type="number" step="any" min="0" required inputmode="decimal">
     <label>Währung</label><input id="fWaehrung" maxlength="3" autocapitalize="characters">
+    <label>Stop-Loss (Kurs, leer = keiner)</label><input id="fSL" type="number" step="any" min="0" inputmode="decimal">
+    <div id="fSLHinweis" class="klein dim" style="margin-top:4px"></div>
     <label>Datum</label><input id="fDatum" type="date">
     <label>Notiz (z. B. Grund für den Kauf)</label><textarea id="fNotiz" rows="2"></textarea>
     <label style="display:flex;gap:8px;align-items:flex-start;color:var(--text);margin-top:12px"><input type="checkbox" id="fBuchen" style="width:auto;margin-top:3px"><span id="fBuchenText" class="klein"></span></label>
@@ -382,7 +393,7 @@ const ampelText = {gruen: "Grün", gelb: "Gelb", rot: "Rot"};
 const scoreFarbe = sc => sc == null ? "var(--grau)" : sc >= 70 ? "var(--pos)" : sc >= 45 ? "var(--warn)" : "var(--neg)";
 const scoreBalken = sc => sc == null ? "" : `<div class="scorebalken"><i style="width:${sc}%;background:${scoreFarbe(sc)}"></i></div>`;
 const FARBEN = ["#d4a24e", "#5aa9bb", "#9b8ad1", "#4caf7d", "#e0785a", "#c58bb0", "#7aa0d6", "#b8b36a"];
-let fSort = "rang", pendingKauf = null;
+let fSort = "rang", pendingKauf = null, pendingVola = null, pendingSK = null, slManuell = false;
 
 // 2026-10-14: Kursverlauf diskret: duenne, gedaempfte Linie, feine Flaeche, nur der letzte Punkt faerbt (gruen/rot)
 function spark(v, ref) {
@@ -617,6 +628,7 @@ function zeichneDepot() {
       <div class="zahlen"><span class="${kl(p.gewinn_pct)}"><b>${pc(p.gewinn_pct)}</b> seit Kauf (${num(p.gewinn)} ${esc(p.waehrung)})</span></div>
       <div class="zahlen dim"><span class="${kl(p.tag_pct)}">Tag ${pc(p.tag_pct)}</span><span class="${kl(p.woche_pct)}">Woche ${pc(p.woche_pct)}</span><span class="${kl(p.monat_pct)}">Monat ${pc(p.monat_pct)}</span></div>
       ${p.hoch_seit_kauf ? `<div class="zahlen dim"><span>Höchststand seit Kauf ${num(p.hoch_seit_kauf)}</span>${p.rueckgang_hoch_pct > 0 ? `<span>aktuell ${num(p.rueckgang_hoch_pct, 1)} % darunter</span>` : ""}</div>` : ""}
+      ${p.sl ? `<div class="zahlen dim"><span>Stop-Loss ${num(p.sl)} (−${num(p.sl_pct, 1)} %)</span>${p.kurs ? `<span>Abstand ${num((p.kurs / p.sl - 1) * 100, 1)} %</span>` : ""}<span>Risiko ${chf(p.stueck * Math.max(0, p.einstand - p.sl) * fxw(p.waehrung || "CHF"))}</span></div>` : `<div class="zahlen dim"><span>Kein Stop-Loss gesetzt (Bearbeiten)</span></div>`}
       ${(p.alarme || []).map(a => `<div class="alarm ${esc(a.stufe)}">⚠ ${esc(a.text)}</div>`).join("")}
       ${p.notiz ? `<div class="dim klein" style="margin-top:4px">📝 ${esc(p.notiz)}</div>` : ""}
       <div class="dim klein">seit ${esc(p.datum || "–")}</div></div>${spark(p.verlauf)}</div>
@@ -705,7 +717,7 @@ function depotObjekt() {
   const bu = (D.depot && Array.isArray(D.depot.buchungen)) ? D.depot.buchungen : [];
   const o = {bargeld_chf: bar, buchungen: bu, einzahlung_chf: (D.depot && D.depot.einzahlung_chf != null) ? D.depot.einzahlung_chf : null,
              realisiert_chf: (D.depot && D.depot.realisiert_chf) || 0,
-             positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null}))};
+             positionen: roh.map(p => ({ticker: p.ticker, name: p.name, stueck: p.stueck, einstand: p.einstand, datum: p.datum, waehrung: p.waehrung, notiz: p.notiz || "", kauf: p.kauf || null, sl: p.sl || null, sl_pct: p.sl_pct || null}))};
   if (o.einzahlung_chf == null && !bu.some(x => EINZAHL_TYPEN.includes(x.typ))) o.einzahlung_chf = einzahlungVon(o);   // Altbestand (Konto + Einstand) festschreiben
   return o;
 }
@@ -735,6 +747,33 @@ function buchen(o, typ, text, betrag) {
   if (EINZAHL_TYPEN.includes(typ)) o.einzahlung_chf = runde2(einzahlungVon(o) + betrag);
   o.buchungen = [{datum: new Date().toISOString().slice(0, 10), typ, text, betrag: runde2(betrag)}].concat(o.buchungen || []).slice(0, 50);
 }
+/* ---- Stop-Loss-Vorschlag: Abstand = Faktor x Tagesschwankung x Wurzel(10), begrenzt auf 6-25 %; Faktor je nach Score/Ampel ---- */
+function volaAus(verlauf) {
+  const v = (verlauf || []).slice(-21); if (v.length < 15) return null;
+  const r = []; for (let i = 1; i < v.length; i++) if (v[i - 1] > 0) r.push(v[i] / v[i - 1] - 1);
+  const m = r.reduce((a, x) => a + x, 0) / r.length;
+  return Math.sqrt(r.reduce((a, x) => a + (x - m) * (x - m), 0) / (r.length - 1)) * 100;
+}
+function slVorschlag(einstand, vola, score, ampel) {
+  const v = vola != null ? vola : 2.5, f = (ampel === "rot" || score == null || score < 45) ? 2.0 : (score >= 70 ? 3.0 : 2.5);
+  const d = Math.min(25, Math.max(6, f * v * Math.sqrt(10)));
+  return {pct: d, kurs: einstand * (1 - d / 100), faktor: f, vola: v, geschaetzt: vola == null};
+}
+function slHinweis() {
+  const ep = parseFloat($("#fEinstand").value), st = parseFloat($("#fStueck").value), w = $("#fWaehrung").value.trim().toUpperCase() || "CHF";
+  const sl = parseFloat($("#fSL").value), el = $("#fSLHinweis"); let t = "";
+  if (!(ep > 0)) { el.textContent = ""; return; }
+  const kb = pendingSK || {}, sv = slVorschlag(ep, pendingVola, kb.score, kb.ampel);
+  if (!slManuell && !editSLvorhanden) $("#fSL").value = sv.kurs.toFixed(ep < 10 ? 3 : 2);
+  const s2 = parseFloat($("#fSL").value);
+  if (s2 > 0 && s2 < ep) {
+    t = "−" + ((1 - s2 / ep) * 100).toFixed(1) + " %" + (st > 0 ? ", Risiko ca. " + chf(st * (ep - s2) * fxw(w)) : "") + ". ";
+  } else if (s2 >= ep) t = "Der Stop-Loss muss unter dem Einstand liegen. ";
+  t += "Vorschlag: " + sv.kurs.toFixed(2) + " (−" + sv.pct.toFixed(1) + " %) = " + sv.faktor + " × Tagesschwankung " + sv.vola.toFixed(1) + " %" + (sv.geschaetzt ? " (geschätzt)" : "") + " × √10" + (kb.score != null ? ", Score " + kb.score : "") + ".";
+  el.textContent = t;
+}
+let editSLvorhanden = false;
+document.addEventListener("input", ev => { if (ev.target.id === "fSL") { slManuell = true; slHinweis(); } else if (["fStueck", "fEinstand", "fWaehrung"].includes(ev.target.id)) slHinweis(); });
 function buchenHinweis() {
   const st = parseFloat($("#fStueck").value), ep = parseFloat($("#fEinstand").value), w = $("#fWaehrung").value.trim().toUpperCase() || "CHF";
   const b = st > 0 && ep > 0 ? st * ep * fxw(w) : null;
@@ -744,13 +783,17 @@ function buchenHinweis() {
 function dialogOeffnen(vor) {
   editTicker = vor && vor.edit ? vor.ticker : null;
   pendingKauf = vor && vor.kauf && !vor.edit ? vor.kauf : null;
+  pendingVola = vor.vola != null ? vor.vola : volaAus(vor.verlauf);
+  editSLvorhanden = !!(vor.edit && vor.sl); slManuell = false;
+  pendingSK = vor.kauf || null;
+  $("#fSL").value = editSLvorhanden ? vor.sl : "";
   $("#dlgTitel").textContent = editTicker ? "Position bearbeiten" : "Position hinzufügen";
   $("#fTicker").value = vor.ticker || ""; $("#fTicker").readOnly = !!editTicker;
   $("#fName").value = vor.name || ""; $("#fStueck").value = vor.stueck || ""; $("#fEinstand").value = vor.einstand || "";
   $("#fWaehrung").value = vor.waehrung || ""; $("#fDatum").value = vor.datum || new Date().toISOString().slice(0, 10);
   $("#fNotiz").value = vor.notiz || "";
   $("#fBuchen").checked = false;                         // Standard: Kauf mindert den Kontostand; Haken nur fuer bereits vorhandene Titel
-  buchenHinweis();
+  buchenHinweis(); slHinweis();
   $("#dlgPos").showModal();
 }
 $("#formPos").addEventListener("submit", ev => {
@@ -758,6 +801,8 @@ $("#formPos").addEventListener("submit", ev => {
   const o = depotObjekt();
   const p = {ticker: $("#fTicker").value.trim().toUpperCase(), name: $("#fName").value.trim(), stueck: parseFloat($("#fStueck").value),
              einstand: parseFloat($("#fEinstand").value), datum: $("#fDatum").value, waehrung: $("#fWaehrung").value.trim().toUpperCase(), notiz: $("#fNotiz").value.trim()};
+  const slv = parseFloat($("#fSL").value);
+  if (slv > 0 && slv < p.einstand) { p.sl = slv; p.sl_pct = Math.round((1 - slv / p.einstand) * 1000) / 10; } else { p.sl = null; p.sl_pct = null; }
   if (!p.ticker || !(p.stueck > 0) || !(p.einstand > 0)) return;
   if (pendingKauf) p.kauf = pendingKauf;                 // Bewertung (Profil, Ampel, Score) zum Kaufzeitpunkt merken (Vergleich im Depot)
   const i = o.positionen.findIndex(x => x.ticker === p.ticker);
@@ -796,6 +841,7 @@ document.addEventListener("click", ev => {
   if (t.dataset.m) { fMarkt = t.dataset.m; zeichneKandidaten(); return; }
   if (t.dataset.add) { const typ = t.dataset.typ2 || "einbruch", x = liste(typ).find(k => k.ticker === t.dataset.add); if (!x) return;
     dialogOeffnen({ticker: x.ticker, name: x.name, einstand: x.kurs, waehrung: x.waehrung,
+      vola: x.vola, verlauf: x.verlauf,
       kauf: {typ, ampel: x.ampel, score: x.score, erfuellt: x.erfuellt, bewertbar: x.bewertbar, datum: new Date().toISOString().slice(0, 10)}}); return; }
   if (t.dataset.edit) { const p = D.positionen.find(k => k.ticker === t.dataset.edit); dialogOeffnen(Object.assign({edit: true}, p)); return; }
   if (t.dataset.del) {
