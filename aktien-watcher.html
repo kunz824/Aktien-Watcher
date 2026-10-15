@@ -95,6 +95,9 @@
   .alarm.rot { border-color: var(--neg); color: var(--neg); background: rgba(224,96,90,.08); }
   .typkopf { margin: 4px 0 10px; font-size: 12.5px; line-height: 1.45; }
   table.journal td, table.journal th { text-align: center; padding: 6px 4px; } table.journal td:first-child, table.journal th:first-child { text-align: left; }
+  .leiste { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 0 0 12px; }
+  .leiste select { background: var(--bg-panel); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 8px 6px; font: inherit; font-size: 13px; min-width: 0; flex: 1 1 28%; }
+  .idx { padding: 10px 0; border-bottom: 1px solid var(--border); } .idx:last-child { border-bottom: none; }
   .leer { text-align: center; color: var(--text-dim); padding: 28px 10px; font-size: 14px; }
 </style>
 </head>
@@ -119,11 +122,8 @@
 
   <!-- Kandidaten -->
   <section class="register" id="r-kandidaten">
-    <div class="chips" id="filterTyp"></div>
-    <div class="typkopf dim" id="typInfo"></div>
-    <div class="chips" id="filterSort"></div>
-    <div class="chips" id="filterAmpel"></div>
-    <div class="chips" id="filterMarkt"></div>
+    <div class="chips" id="filterTyp" style="margin-bottom:8px"></div>
+    <div class="leiste" id="filterBar"></div>
     <div id="kandidatenliste"></div>
   </section>
 
@@ -135,7 +135,7 @@
   <!-- Depot -->
   <section class="register" id="r-depot">
     <div id="konto"></div>
-    <div class="aktionen" style="margin:0 0 12px"><button class="knopf" id="btnNeuePos">+ Position hinzufügen</button><button class="knopf sek" id="btnBargeld">Einzahlungen ändern</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
+    <div class="aktionen" style="margin:0 0 12px"><button class="knopf sek" id="btnBargeld">Einzahlungen ändern</button><button class="knopf sek" id="btnExport">⬇ Export</button><button class="knopf sek" id="btnImport">⬆ Import</button><input type="file" id="fileImport" accept="application/json" hidden></div>
     <div id="positionen"></div>
   </section>
 
@@ -150,19 +150,19 @@
     <h2>Die Register</h2>
     <div class="karte"><table class="mini">
       <tr><th>Register</th><th style="text-align:left">Was du dort siehst</th></tr>
-      <tr><td><b>Übersicht</b></td><td style="text-align:left">Index-Alarm (S&amp;P 500, SMI, DAX), Marktumfeld, Einstiegszone, Depot-Alarme, die Top-Titel je Liste und das Gesamtranking.</td></tr>
-      <tr><td><b>Dashboard</b></td><td style="text-align:left">Dein Konto und Depot in Kacheln, Wertentwicklung, Verteilung, Gewinn je Position und das Journal.</td></tr>
-      <tr><td><b>Kandidaten</b></td><td style="text-align:left">«Alle» = ein gemeinsames Ranking. Daneben die vier Einzellisten. Antippen öffnet Einstiegszone, Kriterien und Schlagzeilen. «+ Ins Depot legen» übernimmt den Titel. Filter «Nur Einstiegszone».</td></tr>
-      <tr><td><b>Depot</b></td><td style="text-align:left">Deine Positionen mit Bewertung und Alarmen, Kontobewegungen, Export und Import.</td></tr>
-      <tr><td><b>Info</b></td><td style="text-align:left">Diese Erklärung.</td></tr>
+      <tr><td><b>Übersicht</b></td><td style="text-align:left">Neun Indizes (S&amp;P 500, Dow Jones, Nasdaq 100, Russell 2000, SMI, DAX, MDAX, SDAX, Euro Stoxx 50) mit Index-Alarm, Depot-Alarme, Marktumfeld, das Gesamtranking (Top 10 aller Kategorien, je Titel mit Einstiegszeitpunkt) und die ersten drei jeder Kategorie.</td></tr>
+      <tr><td><b>Dashboard</b></td><td style="text-align:left">Dein Konto und Depot in Kacheln, Wertentwicklung, Verteilung, Gewinn je Position und die Bewertung der Positionen.</td></tr>
+      <tr><td><b>Kandidaten</b></td><td style="text-align:left">Oben die Liste wählen: «Alle» = ein gemeinsames Ranking (Gesamtscore), daneben die vier Einzellisten (Einbrüche, Stars, Wachstum, Unterbewertet). Darunter Sortierung, Ampel, Index und «Nur Einstiegszone». Antippen eines Titels öffnet Einstiegszone, Kriterien und Schlagzeilen. «+ Ins Depot legen» übernimmt den Titel ins Depot.</td></tr>
+      <tr><td><b>Depot</b></td><td style="text-align:left">Deine Positionen mit Bewertung und Alarmen, Kontobewegungen, «Einzahlungen ändern», Export und Import. Neue Positionen legst du unter «Kandidaten» mit «+ Ins Depot legen» an.</td></tr>
+      <tr><td><b>Info</b></td><td style="text-align:left">Diese Erklärung und das Journal (Hat der Score etwas gebracht?).</td></tr>
     </table></div>
 
     <h2>Die vier Listen</h2>
     <div class="karte"><table class="mini">
       <tr><th>Liste</th><th style="text-align:left">Idee und Auslöser</th></tr>
-      <tr><td><b>Einbrüche</b></td><td style="text-align:left">Gute Firma wird billiger und erholt sich. Auslöser: in den letzten 10 Handelstagen ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen. Die 150 stärksten Einbrüche werden bewertet, die 60 besten angezeigt.</td></tr>
-      <tr><td><b>Stars</b></td><td style="text-align:left">Starke Trends laufen weiter. Auslöser: höchstens 10 % unter dem 52-Wochen-Hoch, über der 200-Tage-Linie und 6-Monats-Rendite im obersten Fünftel. Die 100 stärksten werden bewertet, die 40 besten angezeigt.</td></tr>
-      <tr><td><b>Wachstum</b></td><td style="text-align:left">Firmen mit starkem Geschäftswachstum. Auslöser (kein Kurssignal): Umsatzwachstum ≥10 % und Gewinnwachstum positiv, jeweils für das letzte Quartal gegenüber Vorjahr <i>und</i> laut Prognose. Die 40 besten werden angezeigt.</td></tr>
+      <tr><td><b>Einbrüche</b></td><td style="text-align:left">Gute Firma wird billiger und erholt sich. Auslöser: in den letzten 10 Handelstagen ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen. Die 150 stärksten Einbrüche werden bewertet, die 60 besten angezeigt. <br><span class="dim">Für Einzeltitel nicht belegt.</span></td></tr>
+      <tr><td><b>Stars</b></td><td style="text-align:left">Starke Trends laufen weiter. Auslöser: höchstens 10 % unter dem 52-Wochen-Hoch, über der 200-Tage-Linie und 6-Monats-Rendite im obersten Fünftel. Die 100 stärksten werden bewertet, die 40 besten angezeigt. <br><span class="dim">Der Kursteil liesse sich testen (stars_backtest.py, Ergebnis: nicht bestanden), der Wachstumsteil nicht.</span></td></tr>
+      <tr><td><b>Wachstum</b></td><td style="text-align:left">Firmen mit starkem Geschäftswachstum. Auslöser (kein Kurssignal): Umsatzwachstum ≥10 % und Gewinnwachstum positiv, jeweils für das letzte Quartal gegenüber Vorjahr <i>und</i> laut Prognose. Die 40 besten werden angezeigt. <br><span class="dim">Risiko: teuer bezahltes Wachstum. Der Score gewichtet Schätzungsrevisionen und Wachstum im Verhältnis zur Bewertung.</span></td></tr>
       <tr><td><b>Unterbewertet</b> (Wende)</td><td style="text-align:left">Günstige, gesunde Firmen vor der Wende, auch Nebenwerte. Auslöser: Mittel aus Kurs-Buchwert, KGV und Free-Cashflow-Rendite im günstigsten Drittel (je Branche, sonst im ganzen Universum), Free Cashflow positiv, Marktkapitalisierung ≥ 150 Mio, Piotroski mindestens 75 % der Punkte. Wendezeichen im Kurs (über der 50-Tage-Linie, 3 Monate positiv) fliesst in den Score ein. <b>Ohne vollständige Daten keine Aussage:</b> fehlt eine der Zahlen oder der Jahresabschluss, kommt der Titel nicht in die Liste (er gilt nicht als «neutral»). Banken fallen deshalb meist heraus. Die 30 besten werden angezeigt.</td></tr>
     </table>
     <ul>
@@ -223,7 +223,7 @@
 
     <h2>Konto, Depot und Alarme</h2>
     <div class="karte"><ul>
-      <li><b>Kontostand = Einzahlungen − Einstand Depot.</b> Mit «Einzahlungen ändern» (Dashboard oder Depot) legst du den Gesamtbetrag fest, z. B. 5000, oder zahlst mit + / − einen Betrag ein bzw. aus. Jeder Kauf senkt den Kontostand um den Einstand, jeder Verkauf erhöht ihn um den Erlös. Kontostand und Depotwert werden nie addiert.</li>
+      <li><b>Kontostand = Einzahlungen − Einstand Depot.</b> Mit «Einzahlungen ändern» (Register Depot) legst du den Gesamtbetrag fest, z. B. 5000, oder zahlst mit + / − einen Betrag ein bzw. aus. Jeder Kauf senkt den Kontostand um den Einstand, jeder Verkauf erhöht ihn um den Erlös. Kontostand und Depotwert werden nie addiert.</li>
       <li><b>Einstand Depot</b> = Summe der gekauften Titel zum Kaufpreis (in CHF). <b>Depotwert (IST)</b> = aktueller Marktwert. <b>Gewinn / Verlust</b> = Depotwert − Einstand. <b>Heutige Veränderung</b> = Tagesbewegung der Titel in CHF und in % vom Depotwert.</li>
       <li>Hattest du einen Titel schon vorher, setzt du beim Hinzufügen den Haken «bereits vorhanden»: Der Betrag wird dann als Einzahlung verbucht und der Kontostand bleibt gleich. «Verkauft / entfernen» ohne Preis schreibt den Einstand wieder gut (für Fehleingaben).</li>
       <li>Beim Ins-Depot-Legen merkt sich die App Liste, Ampel und Score zum Kaufzeitpunkt. Die laufende Bewertung nutzt das Profil, in dem du gekauft hast.</li>
@@ -233,9 +233,10 @@
     <h2>Journal: der eigene Beleg</h2>
     <div class="karte"><ul>
       <li>Der Scanner hält jeden bewerteten Titel (auch die nicht angezeigten) mit Liste, Score, Gesamtscore, Ampel und Kurs fest, je Titel und Liste höchstens alle 30 Tage.</li>
-      <li>Nach 1, 3 und 6 Monaten vergleicht das Dashboard, wie sich Titel mit hohem (≥70), mittlerem (45–69) und tiefem Score (&lt;45 oder rot) gegenüber dem Durchschnitt des Universums entwickelt haben, ebenso Titel mit Einstiegszone «ja» gegenüber «nein». Wirkt der Score, muss «≥70» dauerhaft klar besser sein als «&lt;45».</li>
+      <li>Nach 1, 3 und 6 Monaten vergleicht die Tabelle unten, wie sich Titel mit hohem (≥70), mittlerem (45–69) und tiefem Score (&lt;45 oder rot) gegenüber dem Durchschnitt des Universums entwickelt haben, ebenso Titel mit Einstiegszone «ja» gegenüber «nein». Wirkt der Score, muss «≥70» dauerhaft klar besser sein als «&lt;45».</li>
       <li>Erste Zahlen gibt es nach rund einem Monat, aussagekräftig wird es ab etwa 30 Fällen je Feld und über verschiedene Marktphasen. Grenzen: vor Kosten, keine Beta-Bereinigung, nur Titel des heutigen Universums.</li>
     </ul></div>
+    <div id="journalInfo"></div>
 
     <h2>Synchronisation</h2>
     <div class="karte"><ul>
@@ -256,6 +257,7 @@
     </div>
 
     <h2>Index-Statistik (Backtest, Hold-out, 3 Monate nach Signal)</h2>
+    <div class="dim klein" style="margin:-4px 0 8px">Ein Backtest liegt nur für S&amp;P 500, SMI und DAX vor. Bei den übrigen Indizes (Dow Jones, Nasdaq 100, Russell 2000, MDAX, SDAX, Euro Stoxx 50) gelten dieselben Auslöser, der Alarm ist dort aber nur ein Hinweis ohne Auswertung.</div>
     <div class="karte"><table class="mini" id="statTab"></table>
       <div class="dim klein" style="margin-top:8px">Trefferquote = Anteil positiver 3-Monats-Renditen nach Kosten. Vorsprung = Mehrertrag gegenüber dem Durchschnittstag. n = Anzahl Ereignisse.</div></div>
   </section>
@@ -444,52 +446,49 @@ function zeichne() {
   if (D.gekuerzt) b += '<div class="banner">Hinweis: Liste wegen Grössenlimit gekürzt (schwächste Kandidaten ausgeblendet).</div>';
   if (!D.stand && !(D.status && D.status.laeuft)) b += '<div class="banner">Noch keine Daten. Der erste Scan startet automatisch oder mit «↻ Vollscan».</div>';
   $("#banner").innerHTML = b;
-  zeichneIndizes(); zeichneAlarmeKurz(); zeichneAmpelSumme(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); zeichneStatTab();
+  zeichneIndizes(); zeichneAlarmeKurz(); zeichneAmpelSumme(); zeichneKandidaten(); zeichneDepot(); zeichneDashboard(); $("#journalInfo").innerHTML = journalKarte(); zeichneStatTab();
 }
 
 function zeichneIndizes() {
   const el = $("#indizes");
   if (!D.index.length) { el.innerHTML = '<div class="leer">Keine Indexdaten.</div>'; return; }
-  el.innerHTML = D.index.map(i => {
+  el.innerHTML = '<div class="karte" style="padding:2px 14px">' + D.index.map(i => {
     const al = (i.ausgeloest || []).map(a => {
-      const s = a.stats;
-      const t = s ? `Historisch (Hold-out, ${s[2]} Fälle): nach solchen Rückgängen lag der Index nach 3 Monaten in ${Math.round(s[0] * 100)} % der Fälle höher, im Schnitt ${s[1] > 0 ? "+" : ""}${s[1].toFixed(1)} % über dem Durchschnitt.` : "";
-      return `<div style="margin-top:8px;font-size:13px"><b class="neg">Auslöser: ${esc(a.trigger)}</b><div class="dim">${esc(t)}</div></div>`;
+      const st = a.stats;
+      const t = st ? `Historisch (Hold-out, ${st[2]} Fälle): nach solchen Rückgängen lag der Index nach 3 Monaten in ${Math.round(st[0] * 100)} % der Fälle höher, im Schnitt ${st[1] > 0 ? "+" : ""}${st[1].toFixed(1)} % über dem Durchschnitt.` : "Für diesen Index liegt kein Backtest vor: der Alarm ist nur ein Hinweis.";
+      return `<div style="margin-top:6px;font-size:13px"><b class="neg">Auslöser: ${esc(a.trigger)}</b><div class="dim klein">${esc(t)}</div></div>`;
     }).join("");
-    return `<div class="karte"><div class="zeile"><div><b>${esc(i.name)}</b> <span class="pille ${esc(i.status)}">${esc(i.status)}</span>
-      <div class="zahlen"><span>${num(i.kurs, 0)}</span><span class="${kl(i.tag_pct)}">Tag ${pc(i.tag_pct)}</span><span class="${kl(i.woche_pct)}">Woche ${pc(i.woche_pct)}</span><span class="${kl(i.monat_pct)}">Monat ${pc(i.monat_pct)}</span></div>
-      <div class="dim klein">vom 52-W-Hoch ${pc(i.vom_hoch_pct)}</div></div>${spark(i.verlauf)}</div>${al}</div>`;
-  }).join("");
+    return `<div class="idx"><div class="zeile"><div style="min-width:0"><b>${esc(i.name)}</b> <span class="pille ${esc(i.status)}">${esc(i.status)}</span>
+      <div class="zahlen"><span>${num(i.kurs, 0)}</span><span class="${kl(i.tag_pct)}">Tag ${pc(i.tag_pct)}</span><span class="${kl(i.woche_pct)}">Woche ${pc(i.woche_pct)}</span><span class="${kl(i.monat_pct)}">Monat ${pc(i.monat_pct)}</span><span class="dim">Hoch ${pc(i.vom_hoch_pct)}</span></div></div>${spark(i.verlauf)}</div>${al}</div>`;
+  }).join("") + '</div>';
 }
 
+const ezTag = x => x.ez == null ? "" : (x.ez ? '<span class="tag" style="color:var(--pos)">Einstieg: ja</span>' : '<span class="tag">Einstieg: abwarten</span>');
 function zeichneAmpelSumme() {
   const el = $("#ampelsumme");
-  let h = "", leer = true;
+  let h = "";
   const mo = D.markt_ok;
   if (mo) h += `<div class="karte" style="border-color:${mo.ok ? "var(--pos)" : "var(--neg)"}"><div class="zeile"><span><b>Marktumfeld</b> <span class="dim klein">Filter für Einstiege</span></span><span class="pille" style="color:${mo.ok ? "var(--pos)" : "var(--neg)"}">${mo.ok ? "günstig" : "schwach"}</span></div><div class="dim klein" style="margin-top:4px">${esc(mo.text)}</div></div>`;
-  const ezl = liste("alle").filter(x => x.ez && x.ampel !== "rot").slice(0, 5);
-  if (ezl.length) h += `<div class="karte"><div class="zeile"><span><b>Einstiegszone</b> <span class="dim klein">starke Titel, die gerade günstig zu kaufen wären</span></span></div><div style="margin-top:6px">${ezl.map(x =>
-    `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span> ${x.typen.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>`).join("")}</div>
-    <div class="dim klein" style="margin-top:4px">Regel aus Kursdaten (Stabilisierung bzw. Rücksetzer), noch nicht belegt. Details beim Titel unter «Kandidaten».</div>
-    <div class="aktionen" style="margin-top:8px"><button class="knopf sek" data-gehe="alle" data-ez="1">Nur Einstiegszone anzeigen</button></div></div>`;
-  const top5 = liste("alle").filter(x => x.ampel !== "rot").slice(0, 5);
-  if (top5.length) h += `<div class="karte"><div class="zeile"><span><b>Gesamtranking</b> <span class="dim klein">gleicher Massstab für alle Listen</span></span></div><div style="margin-top:6px">${top5.map((x, i) =>
-    `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="dim klein">#${i + 1}</span> <span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span> ${x.typen.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>`).join("")}</div>
-    <div class="aktionen" style="margin-top:8px"><button class="knopf sek" data-gehe="alle">Gesamtranking ansehen</button></div></div>`;
+  // Gesamtranking aus allen Kategorien, je Titel mit Einstiegszeitpunkt
+  const rk = liste("alle").filter(x => x.ampel !== "rot").slice(0, 10);
+  if (rk.length) h += `<div class="karte"><div class="zeile"><span><b>Gesamtranking</b> <span class="dim klein">alle Kategorien, ein Massstab</span></span></div><div style="margin-top:4px">${rk.map((x, i) =>
+    `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px"><div class="zeile"><span><span class="dim klein">#${i + 1}</span> <span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>
+      <div style="margin-top:2px">${x.typen.map(t => `<span class="tag">${esc(t)}</span>`).join("")}${ezTag(x)}</div>${x.ez_t ? `<div class="dim klein" style="margin-top:2px">${esc(x.ez_t)}</div>` : ""}</div>`).join("")}</div>
+    <div class="aktionen" style="margin-top:10px"><button class="knopf sek" data-gehe="alle">Gesamtranking ansehen</button><button class="knopf sek" data-gehe="alle" data-ez="1">Nur Einstiegszone</button></div>
+    <div class="dim klein" style="margin-top:6px">Einstieg = Kursregel (Stabilisierung bzw. Rücksetzer), noch nicht belegt, kein Kaufsignal.</div></div>`;
+  // je Kategorie die ersten drei
+  let leer = !rk.length;
   for (const t of Object.keys(LISTEN)) {
     const k = liste(t), z = a => k.filter(x => x.ampel === a).length;
     if (k.length) leer = false;
-    const top = k.filter(x => x.ampel === "gruen").slice(0, 3).map(x =>
-      `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt gruen"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></span></div>`).join("");
+    const top = k.slice(0, 3).map(x =>
+      `<div style="padding:5px 0;font-size:13px"><div class="zeile"><span><span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>${x.ez != null ? `<div style="margin:2px 0 0 19px">${ezTag(x)}</div>` : ""}</div>`).join("");
     h += `<div class="karte"><div class="zeile"><span><b>${TYP_INFO[t].name}</b> <span class="dim klein">${k.length} Titel</span></span>
       <span class="klein"><span class="punkt gruen"></span> ${z("gruen")} &nbsp;<span class="punkt gelb"></span> ${z("gelb")} &nbsp;<span class="punkt rot"></span> ${z("rot")}</span></div>
-      ${top ? '<div style="margin-top:6px">' + top + '</div>' : '<div class="dim klein" style="margin-top:6px">' + (k.length ? "Kein Titel mit grüner Ampel." : "Aktuell keine Titel.") + '</div>'}
+      ${top ? '<div style="margin-top:6px">' + top + '</div>' : '<div class="dim klein" style="margin-top:6px">Aktuell keine Titel.</div>'}
       ${k.length ? `<div class="aktionen" style="margin-top:8px"><button class="knopf sek" data-gehe="${t}">Alle ${TYP_INFO[t].name} ansehen</button></div>` : ""}</div>`;
   }
   if (leer) { el.innerHTML = '<div class="leer">Aktuell keine Kandidaten.</div>'; return; }
-  const rs = liste("wachstum").filter(x => x.ruecksetzer && x.ampel !== "rot").slice(0, 3);
-  if (rs.length) h += `<div class="karte"><b>Wachstum im Rücksetzer</b><div class="dim klein" style="margin:2px 0 6px">Starkes Wachstum, Kurs mindestens 10 % unter dem Hoch oder im Einbruch-Scan.</div>${rs.map(x =>
-    `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span class="${kl(x.vom_hoch_pct)}">${pc(x.vom_hoch_pct)}</span></div>`).join("")}</div>`;
   const ab = D.abdeckung;
   h += `<div class="dim klein" style="margin:-2px 0 8px">Grün = Checkliste erfüllt, kein Kaufsignal. ${ab && ab.universum ? "Wachstums-Prüfung: " + ab.geprueft + " von " + ab.universum + " Titeln abgedeckt." : ""}${ab && ab.wende_bewertbar != null ? " Unterbewertet/Wende: " + ab.wende_bewertbar + " von " + ((ab.universum || 0) + (ab.nebenwerte || 0)) + " Titeln mit vollständigen Bewertungsdaten, bei " + ab.wende_abschluss + " von " + ab.wende_guenstig + " günstigen liegt der Jahresabschluss vor. Wird bei jedem Scan vervollständigt." : ""}</div>`;
   el.innerHTML = h;
@@ -512,13 +511,14 @@ function ursachenBlock(x) {
 function zeichneKandidaten() {
   const T = TYP_INFO[fTyp], L = liste(fTyp);
   $("#filterTyp").innerHTML = Object.keys(TYP_INFO).map(t => `<button class="chip ${fTyp === t ? "aktiv" : ""}" data-typ="${t}">${TYP_INFO[t].name} (${liste(t).length})</button>`).join("");
-  $("#typInfo").textContent = T.text;
   if (fSort !== "rang" && !(T.sort2 && fSort === T.sort2[0])) fSort = "rang";
-  const ampeln = ["alle", "gruen", "gelb", "rot"], indizes = ["alle", ...new Set(L.flatMap(x => x.indizes && x.indizes.length ? x.indizes : [x.markt]))];
+  const indizes = ["alle", ...new Set(L.flatMap(x => x.indizes && x.indizes.length ? x.indizes : [x.markt]))];
   if (!indizes.includes(fMarkt)) fMarkt = "alle";
-  $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Score)"], ...(T.sort2 ? [T.sort2] : [])].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
-  $("#filterAmpel").innerHTML = ampeln.map(a => `<button class="chip ${fAmpel === a ? "aktiv" : ""}" data-a="${a}">${a === "alle" ? "Alle" : ampelText[a]}</button>`).join("");
-  $("#filterMarkt").innerHTML = indizes.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Indizes" : esc(m)}</button>`).join("") +
+  const opt = (v, cur, t) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(t)}</option>`;
+  $("#filterBar").innerHTML =
+    `<select id="selSort" aria-label="Sortierung">${opt("rang", fSort, "Ranking")}${T.sort2 ? opt(T.sort2[0], fSort, T.sort2[1]) : ""}</select>` +
+    `<select id="selAmpel" aria-label="Ampel">${["alle", "gruen", "gelb", "rot"].map(a => opt(a, fAmpel, a === "alle" ? "Ampel: alle" : "Ampel: " + ampelText[a])).join("")}</select>` +
+    `<select id="selMarkt" aria-label="Index">${indizes.map(m => opt(m, fMarkt, m === "alle" ? "Index: alle" : m)).join("")}</select>` +
     `<button class="chip ${fEz ? "aktiv" : ""}" data-ez="1">Nur Einstiegszone</button>`;
   const rang = {}; L.forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Score sortiert (rote Ampel zuletzt)
   let liste_ = L.filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || (x.indizes && x.indizes.length ? x.indizes.includes(fMarkt) : x.markt === fMarkt)) && (!fEz || x.ez));
@@ -589,21 +589,20 @@ function kontoKacheln() {
     <div class="kachel"><span class="dim klein">Depotwert (IST)</span><div class="w">${chf(w.wert)}</div><div class="klein dim">aktueller Marktwert</div></div>
     <div class="kachel"><span class="dim klein">Gewinn / Verlust</span><div class="w ${kl(w.gewinn)}">${chf(w.gewinn)}<div class="klein">${pc(w.gewinn_pct)}</div></div></div>
     <div class="kachel" style="grid-column:1/-1"><span class="dim klein">Heutige Veränderung</span><div class="w ${kl(w.tag)}">${chf(w.tag)} <span class="klein">${pc(w.tag_pct)} vom Depotwert</span></div></div></div>
-    <div class="aktionen" style="margin:0 0 6px"><button class="knopf sek" data-act="ein">Einzahlungen ändern</button></div>
-    <div class="dim klein" style="margin:0 0 10px">Kontostand = Einzahlungen − Einstand Depot. Kontostand und Depotwert werden nicht addiert.</div>`;
+    `;
 }
 
 function buchungenKarte() {
   const b = ((D.depot && D.depot.buchungen) || []).slice(0, 6);
-  if (!b.length) return '<div class="dim klein" style="margin-bottom:10px">Noch keine Kontobewegungen. «Einzahlen / Auszahlen» legt das Guthaben fest, Käufe und Verkäufe buchen automatisch.</div>';
+  if (!b.length) return '<div class="dim klein" style="margin-bottom:10px">Noch keine Kontobewegungen. «Einzahlungen ändern» legt das Guthaben fest, Käufe und Verkäufe buchen automatisch.</div>';
   return '<div class="karte"><div class="dim klein" style="margin-bottom:4px">Letzte Kontobewegungen</div>' + b.map(x =>
     `<div class="zeile" style="padding:4px 0;font-size:13px"><span><span class="dim klein">${esc(x.datum)}</span> <b>${esc(x.typ)}</b> <span class="dim">${esc(x.text || "")}</span></span><span class="${kl(x.betrag)}">${x.betrag > 0 ? "+" : x.betrag < 0 ? "−" : ""}${chf(Math.abs(x.betrag)).replace(" CHF", "")}</span></div>`).join("") + '</div>';
 }
 
 function zeichneDepot() {
   const k = D.konto || {}, pos = D.positionen || [];
-  $("#konto").innerHTML = `<div class="dim klein" style="margin-bottom:10px">Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
-  if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen.</div>'; return; }
+  $("#konto").innerHTML = `<div class="dim klein" style="margin-bottom:10px">Kontostand = Einzahlungen − Einstand Depot (Kontostand und Depotwert werden nicht addiert). Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
+  if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» einen Titel antippen und «+ Ins Depot legen».</div>'; return; }
   $("#positionen").innerHTML = pos.map(p => {
     const kand = alleKand().find(x => x.ticker === p.ticker);
     return `<div class="karte"><div class="titel-zeile" style="cursor:default"><div class="mitte">
@@ -630,7 +629,7 @@ function donut(teile) {
 
 function zeichneDashboard() {
   const k = D.konto || {}, pos = (D.positionen || []).filter(p => p.wert_chf != null), el = $("#dashboard");
-  if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» oder «Depot» hinzufügen.</div>' + journalKarte(); return; }
+  if (!(D.positionen || []).length) { el.innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» einen Titel antippen und «+ Ins Depot legen».</div>'; return; }
   let h = kontoKacheln();
   // Wertentwicklung (heutiger Bestand, rueckgerechnet; Wechselkurs heute)
   const fx = k.fx || {}, serien = pos.filter(p => p.verlauf && p.verlauf.length > 2);
@@ -658,7 +657,7 @@ function zeichneDashboard() {
       <div class="kachel"><span class="punkt gruen"></span> Grün<div class="w">${z("gruen")}</div></div><div class="kachel"><span class="punkt gelb"></span> Gelb<div class="w">${z("gelb")}</div></div><div class="kachel"><span class="punkt rot"></span> Rot<div class="w">${z("rot")}</div></div></div>
       ${ver ? '<div class="karte"><div class="dim klein" style="margin-bottom:4px">Veränderung seit dem Kauf</div>' + ver + '</div>' : ""}`;
   }
-  el.innerHTML = h + journalKarte();
+  el.innerHTML = h;
 }
 
 // Journal: Hat der Score etwas gebracht? Mehrertrag gegenueber dem Durchschnitt aller Titel des Universums, vor Kosten.
@@ -767,6 +766,12 @@ $("#formPos").addEventListener("submit", ev => {
 });
 
 /* ---- Ereignisse ---- */
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "selSort") { fSort = t.value; zeichneKandidaten(); }
+  else if (t.id === "selAmpel") { fAmpel = t.value; zeichneKandidaten(); }
+  else if (t.id === "selMarkt") { fMarkt = t.value; zeichneKandidaten(); }
+});
 document.addEventListener("click", ev => {
   const t = ev.target;
   const bk = t.closest(".bewkopf");
@@ -819,7 +824,6 @@ $("#fileImport").onchange = async ev => {
   } catch (e) { alert("Datei nicht lesbar: " + e.message); }
   ev.target.value = "";
 };
-$("#btnNeuePos").onclick = () => dialogOeffnen({});
 function einzahlungAendern() {
   const o = depotObjekt(), cur = einzahlungVon(o);
   const v = prompt("Einzahlungen gesamt (CHF), aktuell " + chf(cur) + ".\nNeuen Gesamtbetrag eingeben, z. B. 5000.\nMit + oder − davor: nur diesen Betrag ein- bzw. auszahlen (z. B. +500).", "");
