@@ -143,30 +143,34 @@
   <section class="register info" id="r-info">
     <h2>Worum geht es?</h2>
     <div class="karte">
-      <p>Der Aktien-Watcher durchsucht rund 650 Titel (SMI, DAX, MDAX, S&amp;P 500, Nasdaq 100) und zeigt dir die, die einen genaueren Blick lohnen. Er kauft nichts und gibt <b>keine Kaufsignale</b>. Er ist eine strukturierte Checkliste mit Ranking.</p>
+      <p>Der Aktien-Watcher durchsucht rund 650 Titel (SMI, DAX, MDAX, S&amp;P 500, Nasdaq 100) und zusätzlich Nebenwerte (SDAX, S&amp;P 600, nur für die Liste «Unterbewertet») und zeigt dir die, die einen genaueren Blick lohnen. Er kauft nichts und gibt <b>keine Kaufsignale</b>. Er ist eine strukturierte Checkliste mit Ranking.</p>
       <p>Ein Programm auf deinem PC (der <b>Scanner</b>) holt die Kurse und Kennzahlen und rechnet alles aus. Diese App zeigt nur die Ergebnisse und speichert dein Depot.</p>
     </div>
 
     <h2>Die Register</h2>
     <div class="karte"><table class="mini">
       <tr><th>Register</th><th style="text-align:left">Was du dort siehst</th></tr>
-      <tr><td><b>Übersicht</b></td><td style="text-align:left">Index-Alarm (S&amp;P 500, SMI, DAX), Depot-Alarme, die Top-Titel je Liste und das Gesamtranking.</td></tr>
+      <tr><td><b>Übersicht</b></td><td style="text-align:left">Index-Alarm (S&amp;P 500, SMI, DAX), Marktumfeld, Einstiegszone, Depot-Alarme, die Top-Titel je Liste und das Gesamtranking.</td></tr>
       <tr><td><b>Dashboard</b></td><td style="text-align:left">Dein Konto und Depot in Kacheln, Wertentwicklung, Verteilung, Gewinn je Position und das Journal.</td></tr>
-      <tr><td><b>Kandidaten</b></td><td style="text-align:left">«Alle» = ein gemeinsames Ranking. Daneben die drei Einzellisten. Antippen öffnet die Kriterien und Schlagzeilen. «+ Ins Depot legen» übernimmt den Titel.</td></tr>
+      <tr><td><b>Kandidaten</b></td><td style="text-align:left">«Alle» = ein gemeinsames Ranking. Daneben die vier Einzellisten. Antippen öffnet Einstiegszone, Kriterien und Schlagzeilen. «+ Ins Depot legen» übernimmt den Titel. Filter «Nur Einstiegszone».</td></tr>
       <tr><td><b>Depot</b></td><td style="text-align:left">Deine Positionen mit Bewertung und Alarmen, Kontobewegungen, Export und Import.</td></tr>
       <tr><td><b>Info</b></td><td style="text-align:left">Diese Erklärung.</td></tr>
     </table></div>
 
-    <h2>Die drei Listen</h2>
+    <h2>Die vier Listen</h2>
     <div class="karte"><table class="mini">
       <tr><th>Liste</th><th style="text-align:left">Idee und Auslöser</th></tr>
       <tr><td><b>Einbrüche</b></td><td style="text-align:left">Gute Firma wird billiger und erholt sich. Auslöser: in den letzten 10 Handelstagen ≥5 % an einem Tag, ≥10 % in einer Woche oder ≥20 % in einem Monat gefallen. Die 150 stärksten Einbrüche werden bewertet, die 60 besten angezeigt.</td></tr>
       <tr><td><b>Stars</b></td><td style="text-align:left">Starke Trends laufen weiter. Auslöser: höchstens 10 % unter dem 52-Wochen-Hoch, über der 200-Tage-Linie und 6-Monats-Rendite im obersten Fünftel. Die 100 stärksten werden bewertet, die 40 besten angezeigt.</td></tr>
       <tr><td><b>Wachstum</b></td><td style="text-align:left">Firmen mit starkem Geschäftswachstum. Auslöser (kein Kurssignal): Umsatzwachstum ≥10 % und Gewinnwachstum positiv, jeweils für das letzte Quartal gegenüber Vorjahr <i>und</i> laut Prognose. Die 40 besten werden angezeigt.</td></tr>
+      <tr><td><b>Unterbewertet</b> (Wende)</td><td style="text-align:left">Günstige, gesunde Firmen vor der Wende, auch Nebenwerte. Auslöser: Mittel aus Kurs-Buchwert, KGV und Free-Cashflow-Rendite im günstigsten Drittel (je Branche, sonst im ganzen Universum), Free Cashflow positiv, Marktkapitalisierung ≥ 150 Mio, Piotroski mindestens 75 % der Punkte. Wendezeichen im Kurs (über der 50-Tage-Linie, 3 Monate positiv) fliesst in den Score ein. <b>Ohne vollständige Daten keine Aussage:</b> fehlt eine der Zahlen oder der Jahresabschluss, kommt der Titel nicht in die Liste (er gilt nicht als «neutral»). Banken fallen deshalb meist heraus. Die 30 besten werden angezeigt.</td></tr>
     </table>
     <ul>
       <li>Ein Titel kann in mehreren Listen stehen (Etiketten «Einbruch», «Star», «Wachstum»). <b>«Im Rücksetzer»</b> heisst: Wachstumstitel mindestens 10 % unter dem Hoch oder im Einbruch-Scan, also starkes Geschäft zum tieferen Kurs.</li>
       <li>Für Wachstum braucht der Scanner Kennzahlen jedes Titels. Er prüft pro Lauf rund 80 Titel neu, nach wenigen Läufen ist das ganze Universum abgedeckt (Fortschritt auf der Übersicht).</li>
+      <li><b>Piotroski-Score</b> (0–9) prüft aus den letzten zwei Jahresabschlüssen: Gewinn positiv, Cashflow positiv, Rendite gestiegen, Cashflow höher als Gewinn, Verschuldung gesunken, Liquidität gestiegen, keine neuen Aktien, Bruttomarge gestiegen, Kapitalumschlag gestiegen. Er trennt günstige, gesunde Firmen von «Value-Fallen».</li>
+      <li>Die Jahresabschlüsse holt der Scanner schrittweise (40 Titel pro Scan). Die Liste «Unterbewertet» füllt sich deshalb erst über mehrere Läufe. Die Übersicht zeigt den Stand der Abdeckung.</li>
+      <li>Nebenwerte haben oft keine Analystenschätzungen. Diese Kriterien sind dann grau und zählen nicht mit.</li>
       <li>Alle Schwellen stehen in <code>aktien_watcher_config.json</code> und lassen sich ändern.</li>
     </ul></div>
 
@@ -182,26 +186,39 @@
 
     <h2>Die Kriterien und ihre Gewichte</h2>
     <div class="karte"><table class="mini">
-      <tr><th>Kriterium</th><th>Einbr.</th><th>Stars</th><th>Wachst.</th><th>Gesamt</th></tr>
-      <tr><td>Gewinnwachstum (Prognose)</td><td>18</td><td>14</td><td>15</td><td>18</td></tr>
-      <tr><td>Umsatzwachstum (Prognose)</td><td>14</td><td>10</td><td>15</td><td>14</td></tr>
-      <tr><td>Schätzungsrevisionen (30 Tage)</td><td>14</td><td>20</td><td>18</td><td>20</td></tr>
-      <tr><td>Verschuldung &amp; Cashflow</td><td>12</td><td>5</td><td>6</td><td>12</td></tr>
-      <tr><td>Betriebsmarge</td><td>10</td><td>5</td><td>10</td><td>10</td></tr>
-      <tr><td>Bewertung (Forward-KGV)</td><td>10</td><td>–</td><td>–</td><td>–</td></tr>
-      <tr><td>PEG (KGV im Verhältnis zum Wachstum)</td><td>–</td><td>10</td><td>14</td><td>14</td></tr>
-      <tr><td>Analysten (Empfehlung, Kursziel)</td><td>8</td><td>4</td><td>4</td><td>8</td></tr>
-      <tr><td>Ursache des Einbruchs</td><td>8</td><td>–</td><td>–</td><td>–</td></tr>
-      <tr><td>Relative Stärke (6 Monate)</td><td>–</td><td>18</td><td>8</td><td>–</td></tr>
-      <tr><td>Trend (200-Tage-Linie, Hoch)</td><td>–</td><td>10</td><td>5</td><td>–</td></tr>
-      <tr><td>Innovation (Forschungsanteil)</td><td>3</td><td>2</td><td>3</td><td>2</td></tr>
-      <tr><td>Schlagzeilen (Stichwortsuche)</td><td>3</td><td>2</td><td>2</td><td>2</td></tr>
+      <tr><th>Kriterium</th><th>Einbr.</th><th>Stars</th><th>Wachst.</th><th>Wende</th><th>Gesamt</th></tr>
+      <tr><td>Gewinnwachstum (Prognose)</td><td>18</td><td>14</td><td>15</td><td>5</td><td>18</td></tr>
+      <tr><td>Umsatzwachstum (Prognose)</td><td>14</td><td>10</td><td>15</td><td>4</td><td>14</td></tr>
+      <tr><td>Schätzungsrevisionen (30 Tage)</td><td>14</td><td>20</td><td>18</td><td>10</td><td>20</td></tr>
+      <tr><td>Verschuldung &amp; Cashflow</td><td>12</td><td>5</td><td>6</td><td>10</td><td>12</td></tr>
+      <tr><td>Betriebsmarge</td><td>10</td><td>5</td><td>10</td><td>6</td><td>10</td></tr>
+      <tr><td>Bewertung (Forward-KGV)</td><td>10</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+      <tr><td>PEG (KGV im Verhältnis zum Wachstum)</td><td>–</td><td>10</td><td>14</td><td>–</td><td>14</td></tr>
+      <tr><td>Günstig bewertet (KBV, KGV, FCF-Rendite)</td><td>–</td><td>–</td><td>–</td><td>22</td><td>–</td></tr>
+      <tr><td>Piotroski (Jahresabschlüsse)</td><td>–</td><td>–</td><td>–</td><td>22</td><td>–</td></tr>
+      <tr><td>Wendezeichen im Kurs</td><td>–</td><td>–</td><td>–</td><td>14</td><td>–</td></tr>
+      <tr><td>Analysten (Empfehlung, Kursziel)</td><td>8</td><td>4</td><td>4</td><td>3</td><td>8</td></tr>
+      <tr><td>Ursache des Einbruchs</td><td>8</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+      <tr><td>Relative Stärke (6 Monate)</td><td>–</td><td>18</td><td>8</td><td>–</td><td>–</td></tr>
+      <tr><td>Trend (200-Tage-Linie, Hoch)</td><td>–</td><td>10</td><td>5</td><td>–</td><td>–</td></tr>
+      <tr><td>Innovation (Forschungsanteil)</td><td>3</td><td>2</td><td>3</td><td>2</td><td>2</td></tr>
+      <tr><td>Schlagzeilen (Stichwortsuche)</td><td>3</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
     </table>
     <ul style="margin-top:8px">
-      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in der Config unter «gewichte», «gewichte_stars», «gewichte_wachstum», «gewichte_gesamt».</li>
+      <li>Die Gewichte sind eine begründete Annahme (Prognosen, Revisionen und Qualität zählen am meisten, grobe Stichwort-Kriterien am wenigsten), <b>nicht per Backtest belegt</b>. Anpassbar in der Config unter «gewichte», «gewichte_stars», «gewichte_wachstum», «gewichte_wende», «gewichte_gesamt».</li>
       <li><b>PEG</b> = Forward-KGV geteilt durch das erwartete Gewinnwachstum in % (≤1.5 grün, ≤2.5 gelb, sonst rot).</li>
       <li><b>Ursache des Einbruchs:</b> Schlagzeilen der letzten Tage (Yahoo Finance, Google News) werden per Stichwort Themen zugeordnet (Klage, Kartell, Untersuchung, Gewinnwarnung …). Das ist eine Einordnung, <b>keine Zusammenfassung</b>: den Inhalt musst du in der Meldung lesen.</li>
       <li>«Neue Produkte» und «Innovation» werden nur über Stichwörter und den Forschungsanteil geschätzt. Daten von Yahoo Finance können Lücken oder Fehler haben.</li>
+    </ul></div>
+
+    <h2>Einstiegszone: wann kaufen?</h2>
+    <div class="karte"><ul>
+      <li>Der Score sagt, <b>was</b> ein guter Titel ist. Die Einstiegszone fragt, ob der Kurs <b>jetzt</b> ein vernünftiger Zeitpunkt ist. Sie wird aus Kursdaten berechnet und mit «Einstieg: ja» bzw. «abwarten» markiert.</li>
+      <li><b>Einbruch und Wende:</b> ja, wenn sich der Kurs stabilisiert hat, also seit mindestens 3 Handelstagen kein neues 10-Tage-Tief mehr entstanden ist (Zusatz: «Erholung bestätigt», wenn der Kurs über dem Höchstkurs der letzten 5 Tage schliesst). Verhindert, in ein fallendes Messer zu greifen.</li>
+      <li><b>Star und Wachstum:</b> ja, wenn der Titel über der 200-Tage-Linie liegt <i>und</i> einen Rücksetzer hat (RSI ≤ 40), nahe an der 50-Tage-Linie steht (höchstens 3 % darüber) oder gerade auf ein neues 52-Wochen-Hoch ausbricht. Sonst «abwarten» (läuft heiss oder Trend gebrochen).</li>
+      <li><b>Marktumfeld:</b> Der Durchschnitt aller Titel über seiner 200-Tage-Linie gilt als günstiges Umfeld. Darunter ist Vorsicht angebracht. Die Anzeige steht auf der Übersicht.</li>
+      <li><b>Nicht belegt:</b> Ob diese Regeln den Einstieg wirklich verbessern, prüft <code>Einstieg_Backtest.bat</code> auf deinem PC (Zusatzertrag mit Regel gegenüber ohne Regel, Hold-out, Mehrfachtest). Bis das Ergebnis vorliegt, ist die Einstiegszone eine Orientierung, kein Signal. Zusätzlich hält das Journal fest, wie sich Titel mit «ja» und «nein» tatsächlich entwickeln.</li>
+      <li>Die Einstiegszone wird beim Vollscan berechnet und ändert sich zwischen zwei Scans nicht.</li>
     </ul></div>
 
     <h2>Konto, Depot und Alarme</h2>
@@ -216,7 +233,7 @@
     <h2>Journal: der eigene Beleg</h2>
     <div class="karte"><ul>
       <li>Der Scanner hält jeden bewerteten Titel (auch die nicht angezeigten) mit Liste, Score, Gesamtscore, Ampel und Kurs fest, je Titel und Liste höchstens alle 30 Tage.</li>
-      <li>Nach 1, 3 und 6 Monaten vergleicht das Dashboard, wie sich Titel mit hohem (≥70), mittlerem (45–69) und tiefem Score (&lt;45 oder rot) gegenüber dem Durchschnitt des Universums entwickelt haben. Wirkt der Score, muss «≥70» dauerhaft klar besser sein als «&lt;45».</li>
+      <li>Nach 1, 3 und 6 Monaten vergleicht das Dashboard, wie sich Titel mit hohem (≥70), mittlerem (45–69) und tiefem Score (&lt;45 oder rot) gegenüber dem Durchschnitt des Universums entwickelt haben, ebenso Titel mit Einstiegszone «ja» gegenüber «nein». Wirkt der Score, muss «≥70» dauerhaft klar besser sein als «&lt;45».</li>
       <li>Erste Zahlen gibt es nach rund einem Monat, aussagekräftig wird es ab etwa 30 Fällen je Feld und über verschiedene Marktphasen. Grenzen: vor Kosten, keine Beta-Bereinigung, nur Titel des heutigen Universums.</li>
     </ul></div>
 
@@ -232,6 +249,8 @@
       <p><b>Index-Alarm (belegt, mit Einschränkungen):</b> Kauf von S&amp;P 500, SMI oder DAX nach einem Rückgang (Tag −2.5 %, Woche −4 %, Monat −8 %) war im Hold-out (ca. 2015–2026) in 18 von 18 Fällen besser als der Durchschnittstag. Trefferquote 62–91 %, Mehrertrag +0.5 bis +5.9 % nach 3 Monaten. Aber: nur 11–35 Ereignisse je Test, überwiegend Aufschwungphase, ca. 2–3 Signale pro Jahr und Index.</p>
       <p><b>Einbrüche bei Einzeltiteln (nicht belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte keinen Vorteil.</p>
       <p><b>Stars, Kursteil (nicht belegt):</b> Der Test mit Kursdaten (2003–2026, ca. 470 Titel) bestand nicht. In der Suchperiode bis ca. 2019 lag der Mehrertrag bei allen Varianten unter null, im Hold-out war er bei längeren Horizonten positiv, aber nicht signifikant. Momentum hängt offenbar von der Marktphase ab.</p>
+      <p><b>Unterbewertet / Wende (nicht belegt):</b> Günstige, gesunde Firmen (Value plus Qualität) haben historisch Mehrertrag gebracht, aber unregelmässig und mit vielen Fehlschlägen. Nebenwerte sind zusätzlich schwerer handelbar (grössere Kursspannen, weniger Umsatz). Mit den Gratis-Daten lässt sich das nicht rückwirkend testen (Kennzahlen und Jahresabschlüsse gibt es nur für den heutigen Stand). Das Journal sammelt den Beleg.</p>
+      <p><b>Einstiegsregeln (noch nicht geprüft):</b> Die Regeln der Einstiegszone sind testbar. Ergebnis von <code>Einstieg_Backtest.bat</code> wird nach dem ersten Lauf hier nachgetragen.</p>
       <p><b>Wachstum, Gewinnschätzungen, Revisionen (nicht testbar):</b> Gibt es gratis nicht rückwirkend. Dafür sammelt das Journal den Beleg über die Zeit.</p>
       <p>Ampel, Score und Gesamtscore sind eine Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
     </div>
@@ -278,20 +297,21 @@
 <script>
 "use strict";
 // 2026-10-14: Aktien-Watcher-App, liest /api/daten vom lokalen Server (aktien_watcher.py)
-let D = {index: [], kandidaten: [], stars: [], wachstum: [], positionen: [], konto: {}, status: {}};
+let D = {index: [], kandidaten: [], stars: [], wachstum: [], wende: [], positionen: [], konto: {}, status: {}};
 let fAmpel = "alle", fMarkt = "alle", fTyp = "alle", offen = new Set(), editTicker = null;
-const LISTEN = {einbruch: "kandidaten", stars: "stars", wachstum: "wachstum"};
-const TYP_KEY = {"Einbruch": "einbruch", "Star": "stars", "Wachstum": "wachstum"};
+const LISTEN = {einbruch: "kandidaten", stars: "stars", wachstum: "wachstum", wende: "wende"};
+const TYP_KEY = {"Einbruch": "einbruch", "Star": "stars", "Wachstum": "wachstum", "Wende": "wende"};
 // «Alle»: ein Titel je Ticker, bewertet mit dem Gesamtscore (gleiche Kriterien und Gewichte fuer alle Listen), sortiert nach Gesamtscore
 function alleZusammen() {
   const m = new Map();
-  for (const t of ["einbruch", "stars", "wachstum"]) for (const x of (D[LISTEN[t]] || [])) {
+  for (const t of ["einbruch", "stars", "wachstum", "wende"]) for (const x of (D[LISTEN[t]] || [])) {
     const e = m.get(x.ticker);
     if (!e) m.set(x.ticker, Object.assign({}, x, {typen: [TYP_INFO[t].kurz], typ_key: t, ausloeser: (x.ausloeser || []).slice(), eigene: {[t]: x.score}}));
     else { e.typen.push(TYP_INFO[t].kurz); e.ausloeser = e.ausloeser.concat(x.ausloeser || []); e.eigene[t] = x.score;
+           if (x.ez) { e.ez = true; e.ez_t = x.ez_t; }
            if (t === "einbruch") { e.ursachen = x.ursachen; e.ruecksetzer = e.ruecksetzer || true; } if (x.ruecksetzer) e.ruecksetzer = true; }
   }
-  const OHNE = ["ursache", "bewertung", "relstaerke", "trend"];
+  const OHNE = ["ursache", "bewertung", "relstaerke", "trend", "bewertung_w", "piotroski", "wende"];
   const out = [...m.values()].filter(x => x.score_g != null).map(x => {
     x.kriterien_g = (x.kriterien || []).filter(k => !OHNE.includes(k.key));
     if (x.peg_g && !x.kriterien_g.some(k => k.key === "peg")) x.kriterien_g.push(x.peg_g);
@@ -305,14 +325,17 @@ const liste = t => t === "alle" ? alleZusammen() : (D[LISTEN[t]] || []);
 const alleKand = () => Object.keys(LISTEN).flatMap(t => liste(t).map(x => Object.assign({typ: t}, x)));
 const TYP_INFO = {
   alle: {name: "Alle", kurz: "Alle", sort2: null,
-    text: "Alle Titel aus den drei Listen in einem Ranking. Der Gesamtscore bewertet jeden Titel mit denselben Kriterien und Gewichten (Umsatz, Gewinn, Schätzungsrevisionen, Wachstum im Verhältnis zur Bewertung, Bilanz, Marge, Analysten) und lässt Kurssignale bewusst weg. Die Kurssignale stecken im Typ-Etikett (Einbruch, Star, Wachstum). Gleiche Gewichtung ist eine Annahme, nicht belegt."},
+    text: "Alle Titel aus den vier Listen in einem Ranking. Der Gesamtscore bewertet jeden Titel mit denselben Kriterien und Gewichten (Umsatz, Gewinn, Schätzungsrevisionen, Wachstum im Verhältnis zur Bewertung, Bilanz, Marge, Analysten) und lässt Kurssignale und «günstig» bewusst weg. Die Auslöser stecken im Typ-Etikett (Einbruch, Star, Wachstum, Wende). Titel der Liste Wende haben meist wenig Wachstum und stehen deshalb hier weiter unten. Gleiche Gewichtung ist eine Annahme, nicht belegt."},
   einbruch: {name: "Einbrüche", kurz: "Einbruch", sort2: ["einbruch", "Stärkster Einbruch"],
     text: "Qualitätstitel, die zuletzt stark gefallen sind (Tag −5 %, Woche −10 % oder Monat −20 %). Idee: gute Firma wird billiger und erholt sich. Für Einzeltitel nicht belegt."},
   stars: {name: "Stars", kurz: "Star", sort2: ["hoch", "Nächster am Hoch"],
     text: "Titel nahe am 52-Wochen-Hoch, über der 200-Tage-Linie und im stärksten Fünftel der letzten 6 Monate. Idee: Starke Trends laufen weiter (Momentum). Der Kursteil lässt sich testen (stars_backtest.py), der Wachstumsteil nicht."},
   wachstum: {name: "Wachstum", kurz: "Wachstum", sort2: ["ruecksetzer", "Rücksetzer zuerst"],
-    text: "Firmen mit starkem Wachstum: Umsatz bisher und laut Prognose ≥ 10 %, Gewinnwachstum positiv. Kein Kurs-Auslöser. Teuer bezahltes Wachstum ist das Risiko; der Score gewichtet Schätzungsrevisionen und Wachstum im Verhältnis zur Bewertung."}
+    text: "Firmen mit starkem Wachstum: Umsatz bisher und laut Prognose ≥ 10 %, Gewinnwachstum positiv. Kein Kurs-Auslöser. Teuer bezahltes Wachstum ist das Risiko; der Score gewichtet Schätzungsrevisionen und Wachstum im Verhältnis zur Bewertung."},
+  wende: {name: "Unterbewertet", kurz: "Wende", sort2: null,
+    text: "Günstig bewertete, finanziell gesunde Firmen mit ersten Wendezeichen im Kurs, auch Nebenwerte (SDAX, S&P 600). Günstig = Kurs-Buchwert, KGV und Free-Cashflow-Rendite zusammen im günstigsten Drittel (je Branche). Gesund = Piotroski-Score mindestens 75 % der testbaren Punkte. Ohne vollständige Daten kommt ein Titel nicht in die Liste. Risiko: Value-Fallen (billig aus gutem Grund). Nicht belegt."}
 };
+let fEz = false;
 // 2026-10-14: zwei Betriebsarten. "lokal": Seite kommt von aktien_watcher.py (/api/...). "web": Seite liegt auf GitHub Pages, Daten aus JSONBin.
 let MODUS = null;
 const BIN_STANDARD = "6acfa6f8ac6210605a3142eb";   // Bin-ID ist nicht geheim (ohne Schlüssel nutzlos)
@@ -394,7 +417,7 @@ async function laden() {
     let d;
     if (MODUS === "lokal") d = await (await fetch("/api/daten", {cache: "no-store"})).json();
     else d = await binLesen();
-    D = Object.assign({index: [], kandidaten: [], stars: [], wachstum: [], positionen: [], konto: {}, status: {}}, d);
+    D = Object.assign({index: [], kandidaten: [], stars: [], wachstum: [], wende: [], positionen: [], konto: {}, status: {}}, d);
     zeichne();
   } catch (e) {
     $("#banner").innerHTML = MODUS === "web"
@@ -442,6 +465,13 @@ function zeichneIndizes() {
 function zeichneAmpelSumme() {
   const el = $("#ampelsumme");
   let h = "", leer = true;
+  const mo = D.markt_ok;
+  if (mo) h += `<div class="karte" style="border-color:${mo.ok ? "var(--pos)" : "var(--neg)"}"><div class="zeile"><span><b>Marktumfeld</b> <span class="dim klein">Filter für Einstiege</span></span><span class="pille" style="color:${mo.ok ? "var(--pos)" : "var(--neg)"}">${mo.ok ? "günstig" : "schwach"}</span></div><div class="dim klein" style="margin-top:4px">${esc(mo.text)}</div></div>`;
+  const ezl = liste("alle").filter(x => x.ez && x.ampel !== "rot").slice(0, 5);
+  if (ezl.length) h += `<div class="karte"><div class="zeile"><span><b>Einstiegszone</b> <span class="dim klein">starke Titel, die gerade günstig zu kaufen wären</span></span></div><div style="margin-top:6px">${ezl.map(x =>
+    `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span> ${x.typen.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>`).join("")}</div>
+    <div class="dim klein" style="margin-top:4px">Regel aus Kursdaten (Stabilisierung bzw. Rücksetzer), noch nicht belegt. Details beim Titel unter «Kandidaten».</div>
+    <div class="aktionen" style="margin-top:8px"><button class="knopf sek" data-gehe="alle" data-ez="1">Nur Einstiegszone anzeigen</button></div></div>`;
   const top5 = liste("alle").filter(x => x.ampel !== "rot").slice(0, 5);
   if (top5.length) h += `<div class="karte"><div class="zeile"><span><b>Gesamtranking</b> <span class="dim klein">gleicher Massstab für alle Listen</span></span></div><div style="margin-top:6px">${top5.map((x, i) =>
     `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="dim klein">#${i + 1}</span> <span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span> ${x.typen.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</span><b style="color:${scoreFarbe(x.score)}">${x.score ?? "–"}</b></div>`).join("")}</div>
@@ -461,7 +491,7 @@ function zeichneAmpelSumme() {
   if (rs.length) h += `<div class="karte"><b>Wachstum im Rücksetzer</b><div class="dim klein" style="margin:2px 0 6px">Starkes Wachstum, Kurs mindestens 10 % unter dem Hoch oder im Einbruch-Scan.</div>${rs.map(x =>
     `<div class="zeile" style="padding:5px 0;font-size:13px"><span><span class="punkt ${esc(x.ampel)}"></span> <b>${esc(x.ticker)}</b> <span class="dim">${esc(x.name)}</span></span><span class="${kl(x.vom_hoch_pct)}">${pc(x.vom_hoch_pct)}</span></div>`).join("")}</div>`;
   const ab = D.abdeckung;
-  h += `<div class="dim klein" style="margin:-2px 0 8px">Grün = Checkliste erfüllt, kein Kaufsignal. ${ab && ab.universum ? "Wachstums-Prüfung: " + ab.geprueft + " von " + ab.universum + " Titeln des Universums abgedeckt (wird bei jedem Scan vervollständigt)." : ""}</div>`;
+  h += `<div class="dim klein" style="margin:-2px 0 8px">Grün = Checkliste erfüllt, kein Kaufsignal. ${ab && ab.universum ? "Wachstums-Prüfung: " + ab.geprueft + " von " + ab.universum + " Titeln abgedeckt." : ""}${ab && ab.wende_bewertbar != null ? " Unterbewertet/Wende: " + ab.wende_bewertbar + " von " + ((ab.universum || 0) + (ab.nebenwerte || 0)) + " Titeln mit vollständigen Bewertungsdaten, bei " + ab.wende_abschluss + " von " + ab.wende_guenstig + " günstigen liegt der Jahresabschluss vor. Wird bei jedem Scan vervollständigt." : ""}</div>`;
   el.innerHTML = h;
 }
 
@@ -488,9 +518,10 @@ function zeichneKandidaten() {
   if (!indizes.includes(fMarkt)) fMarkt = "alle";
   $("#filterSort").innerHTML = '<span class="dim klein" style="align-self:center">Sortierung:</span>' + [["rang", "Ranking (Score)"], ...(T.sort2 ? [T.sort2] : [])].map(([k, t]) => `<button class="chip ${fSort === k ? "aktiv" : ""}" data-s="${k}">${t}</button>`).join("");
   $("#filterAmpel").innerHTML = ampeln.map(a => `<button class="chip ${fAmpel === a ? "aktiv" : ""}" data-a="${a}">${a === "alle" ? "Alle" : ampelText[a]}</button>`).join("");
-  $("#filterMarkt").innerHTML = indizes.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Indizes" : esc(m)}</button>`).join("");
+  $("#filterMarkt").innerHTML = indizes.map(m => `<button class="chip ${fMarkt === m ? "aktiv" : ""}" data-m="${esc(m)}">${m === "alle" ? "Alle Indizes" : esc(m)}</button>`).join("") +
+    `<button class="chip ${fEz ? "aktiv" : ""}" data-ez="1">Nur Einstiegszone</button>`;
   const rang = {}; L.forEach((x, i) => rang[x.ticker] = i + 1);   // Server liefert bereits nach Score sortiert (rote Ampel zuletzt)
-  let liste_ = L.filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || (x.indizes && x.indizes.length ? x.indizes.includes(fMarkt) : x.markt === fMarkt)));
+  let liste_ = L.filter(x => (fAmpel === "alle" || x.ampel === fAmpel) && (fMarkt === "alle" || (x.indizes && x.indizes.length ? x.indizes.includes(fMarkt) : x.markt === fMarkt)) && (!fEz || x.ez));
   if (fSort === "einbruch") liste_ = liste_.slice().sort((a, b) => (a.monat_pct ?? 0) - (b.monat_pct ?? 0));
   if (fSort === "hoch") liste_ = liste_.slice().sort((a, b) => (b.vom_hoch_pct ?? -999) - (a.vom_hoch_pct ?? -999));
   if (fSort === "ruecksetzer") liste_ = liste_.slice().sort((a, b) => (a.vom_hoch_pct ?? 999) - (b.vom_hoch_pct ?? 999));
@@ -504,11 +535,12 @@ function zeichneKandidaten() {
         <div class="mitte"><div class="name">${esc(x.ticker)} <span class="dim" style="font-weight:400">${esc(x.name)}</span></div>
           <div class="zahlen"><span>${num(x.kurs)} ${esc(x.waehrung)}</span><span class="${kl(x.tag_pct)}">Tag ${pc(x.tag_pct)}</span><span class="${kl(x.woche_pct)}">Woche ${pc(x.woche_pct)}</span><span class="${kl(x.monat_pct)}">Monat ${pc(x.monat_pct)}</span></div>
           <div class="zahlen" style="margin-top:3px"><span><b style="color:${scoreFarbe(x.score)}">${fTyp === "alle" ? "Gesamtscore" : "Score"} ${x.score ?? "–"}</b></span>${fTyp === "alle" && x.eigene ? '<span class="dim">' + Object.entries(x.eigene).map(([t, v]) => TYP_INFO[t].kurz + " " + v).join(" · ") + '</span>' : ''}<span>${x.erfuellt ?? "–"} von ${x.bewertbar ?? "–"} Kriterien erfüllt</span></div>${scoreBalken(x.score)}
-          <div style="margin-top:4px">${(x.ausloeser || []).map(a => `<span class="tag">${esc(a.trigger)}${a.vor_tagen != null ? " · vor " + a.vor_tagen + " Tg" : ""}</span>`).join("")}${(x.typen || []).map(t => `<span class="tag" style="color:var(--accent)">${esc(t)}</span>`).join("")}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}${x.ruecksetzer ? '<span class="tag" style="color:var(--warn)">im Rücksetzer</span>' : ''}${(x.auch_in || []).map(a => `<span class="tag" style="color:var(--accent)">auch: ${esc(a)}</span>`).join("")}${(x.ursachen || []).slice(0, 2).map(u => `<span class="tag" style="color:var(--warn)">⚑ ${esc(u.thema)}</span>`).join("")}</div></div>
+          <div style="margin-top:4px">${(x.ausloeser || []).map(a => `<span class="tag">${esc(a.trigger)}${a.vor_tagen != null ? " · vor " + a.vor_tagen + " Tg" : ""}</span>`).join("")}${(x.typen || []).map(t => `<span class="tag" style="color:var(--accent)">${esc(t)}</span>`).join("")}${x.ez != null ? (x.ez ? '<span class="tag" style="color:var(--pos)">Einstieg: ja</span>' : '<span class="tag">Einstieg: abwarten</span>') : ''}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}${x.ruecksetzer ? '<span class="tag" style="color:var(--warn)">im Rücksetzer</span>' : ''}${(x.auch_in || []).map(a => `<span class="tag" style="color:var(--accent)">auch: ${esc(a)}</span>`).join("")}${(x.ursachen || []).slice(0, 2).map(u => `<span class="tag" style="color:var(--warn)">⚑ ${esc(u.thema)}</span>`).join("")}</div></div>
         ${spark(x.verlauf)}</div>
       <div class="details">
         <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc((x.indizes && x.indizes.length ? x.indizes.join(", ") : x.markt))} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}${x.rs_pct != null ? " · 6 Monate " + pc(x.rs_pct) : ""}</div>
         ${kursChart(x.verlauf)}
+        ${x.ez_t ? `<div style="margin:8px 0;padding:8px 10px;border-radius:10px;border:1px solid ${x.ez ? "var(--pos)" : "var(--border)"};font-size:13px"><b>Einstiegszone: ${x.ez ? "ja" : "abwarten"}</b> · ${esc(x.ez_t)}${D.markt_ok ? `<div class="dim klein" style="margin-top:3px">${esc(D.markt_ok.text)}</div>` : ""}<div class="dim klein" style="margin-top:3px">Regel aus Kursdaten, noch nicht belegt (siehe Info). Kein Kaufsignal.</div></div>` : ""}
         ${(fTyp === "einbruch" || (fTyp === "alle" && (x.typen || []).includes("Einbruch"))) ? ursachenBlock(x) : ""}
         ${kr}
         ${nw ? '<h2 style="margin:14px 0 4px;font-size:13px">Schlagzeilen</h2><div class="news">' + nw + '</div>' : ''}
@@ -641,8 +673,13 @@ function journalKarte() {
     rows += `<tr><td colspan="4" style="padding-top:10px"><b>${tn}</b> <span class="dim klein">${tj.eintraege} Einträge</span></td></tr>`;
     for (const hn of ["1M", "3M", "6M"]) rows += `<tr><td class="dim">${hn.replace("M", " Mon.")}</td><td>${zelle(tj[hn] && tj[hn].hoch)}</td><td>${zelle(tj[hn] && tj[hn].mittel)}</td><td>${zelle(tj[hn] && tj[hn].tief)}</td></tr>`;
   }
-  return kopf + `<div class="karte"><table class="mini journal"><tr><th></th><th>Score ≥ 70</th><th>45–69</th><th>&lt; 45 / rot</th></tr>${rows}</table>
-    <div class="dim klein" style="margin-top:8px">Mehrertrag gegenüber dem Durchschnitt aller Titel des Universums nach 1, 3 und 6 Monaten (vor Kosten), darunter Anzahl Fälle und Anteil mit Mehrertrag. Seit ${esc(j.seit || "–")}. Grau = weniger als 10 Fälle, noch nicht aussagekräftig. Wirkt der Score, liegt «Score ≥ 70» dauerhaft klar über «&lt; 45 / rot».</div></div>`;
+  let ez = "";
+  if (j.einstieg && j.einstieg_eintraege) {
+    ez = `<tr><td colspan="4" style="padding-top:12px"><b>Einstiegszone</b> <span class="dim klein">${j.einstieg_eintraege} Einträge · Spalten: ja / nein</span></td></tr>` +
+      ["1M", "3M", "6M"].map(hn => `<tr><td class="dim">${hn.replace("M", " Mon.")}</td><td>${zelle(j.einstieg[hn] && j.einstieg[hn].ja)}</td><td>${zelle(j.einstieg[hn] && j.einstieg[hn].nein)}</td><td></td></tr>`).join("");
+  }
+  return kopf + `<div class="karte"><table class="mini journal"><tr><th></th><th>Score ≥ 70</th><th>45–69</th><th>&lt; 45 / rot</th></tr>${rows}${ez}</table>
+    <div class="dim klein" style="margin-top:8px">Mehrertrag gegenüber dem Durchschnitt aller Titel des Universums nach 1, 3 und 6 Monaten (vor Kosten), darunter Anzahl Fälle und Anteil mit Mehrertrag. Seit ${esc(j.seit || "–")}. Grau = weniger als 10 Fälle, noch nicht aussagekräftig. Wirkt der Score, liegt «Score ≥ 70» dauerhaft klar über «&lt; 45 / rot». Einstiegszone: Wirkt die Regel, liegt «ja» dauerhaft klar über «nein». Nebenwerte werden mit dem Durchschnitt der Nebenwerte verglichen, alle anderen mit dem der grossen Indizes.</div></div>`;
 }
 
 function zeichneStatTab() {
@@ -738,9 +775,10 @@ document.addEventListener("click", ev => {
   if (nav) { document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b === nav));
     document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-" + nav.dataset.r)); $("#seite").scrollTo(0, 0); return; }
   if (t.dataset.act === "ein") { einzahlungAendern(); return; }
-  if (t.dataset.gehe) { fTyp = t.dataset.gehe; fAmpel = "alle"; fMarkt = "alle"; fSort = "rang"; zeichneKandidaten();
+  if (t.dataset.gehe) { fTyp = t.dataset.gehe; fAmpel = "alle"; fMarkt = "alle"; fSort = "rang"; fEz = !!t.dataset.ez; zeichneKandidaten();
     document.querySelectorAll("nav button").forEach(b => b.classList.toggle("aktiv", b.dataset.r === "kandidaten"));
     document.querySelectorAll(".register").forEach(r => r.classList.toggle("aktiv", r.id === "r-kandidaten")); $("#seite").scrollTo(0, 0); return; }
+  if (t.dataset.ez && !t.dataset.gehe) { fEz = !fEz; zeichneKandidaten(); return; }
   if (t.dataset.typ) { fTyp = t.dataset.typ; fAmpel = "alle"; fMarkt = "alle"; fSort = "rang"; zeichneKandidaten(); return; }
   if (t.dataset.s) { fSort = t.dataset.s; zeichneKandidaten(); return; }
   if (t.dataset.a) { fAmpel = t.dataset.a; zeichneKandidaten(); return; }
@@ -815,7 +853,7 @@ async function neuLaden() {
     for (let i = 0; i < 16; i++) {
       await new Promise(res => setTimeout(res, 6000));
       const d = await binLesenRoh();
-      if (stempel(d) !== vorher) { D = Object.assign({index: [], kandidaten: [], stars: [], wachstum: [], positionen: [], konto: {}, status: {}}, await entpacken(d)); zeichne(); return; }
+      if (stempel(d) !== vorher) { D = Object.assign({index: [], kandidaten: [], stars: [], wachstum: [], wende: [], positionen: [], konto: {}, status: {}}, await entpacken(d)); zeichne(); return; }
       if (d.status && d.status.laeuft) meldung("⏳ Vollscan läuft beim PC, Daten folgen automatisch …");
     }
     meldung("Der PC hat nicht geantwortet. Läuft der Scanner (Aktien-Watcher_starten.bat)? Die Daten folgen sonst beim nächsten regulären Abgleich.");
