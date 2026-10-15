@@ -214,10 +214,11 @@
     <h2>Einstiegszone: wann kaufen?</h2>
     <div class="karte"><ul>
       <li>Der Score sagt, <b>was</b> ein guter Titel ist. Die Einstiegszone fragt, ob der Kurs <b>jetzt</b> ein vernünftiger Zeitpunkt ist. Sie wird aus Kursdaten berechnet und mit «Einstieg: ja» bzw. «abwarten» markiert.</li>
-      <li><b>Einbruch und Wende:</b> ja, wenn sich der Kurs stabilisiert hat, also seit mindestens 3 Handelstagen kein neues 10-Tage-Tief mehr entstanden ist (Zusatz: «Erholung bestätigt», wenn der Kurs über dem Höchstkurs der letzten 5 Tage schliesst). Verhindert, in ein fallendes Messer zu greifen.</li>
-      <li><b>Star und Wachstum:</b> ja, wenn der Titel über der 200-Tage-Linie liegt <i>und</i> einen Rücksetzer hat (RSI ≤ 40), nahe an der 50-Tage-Linie steht (höchstens 3 % darüber) oder gerade auf ein neues 52-Wochen-Hoch ausbricht. Sonst «abwarten» (läuft heiss oder Trend gebrochen).</li>
-      <li><b>Marktumfeld:</b> Der Durchschnitt aller Titel über seiner 200-Tage-Linie gilt als günstiges Umfeld. Darunter ist Vorsicht angebracht. Die Anzeige steht auf der Übersicht.</li>
-      <li><b>Nicht belegt:</b> Ob diese Regeln den Einstieg wirklich verbessern, prüft <code>Einstieg_Backtest.bat</code> auf deinem PC (Zusatzertrag mit Regel gegenüber ohne Regel, Hold-out, Mehrfachtest). Bis das Ergebnis vorliegt, ist die Einstiegszone eine Orientierung, kein Signal. Zusätzlich hält das Journal fest, wie sich Titel mit «ja» und «nein» tatsächlich entwickeln.</li>
+      <li><b>Einbruch und Unterbewertet:</b> ja, wenn sich der Kurs stabilisiert hat, also seit mindestens 3 Handelstagen kein neues 10-Tage-Tief mehr entstanden ist (Zusatz «Erholung bestätigt», wenn der Kurs über dem Höchstkurs der letzten 5 Tage schliesst). Verhindert, in ein fallendes Messer zu greifen.</li>
+      <li><b>Star und Wachstum:</b> ja, wenn der Titel über der 200-Tage-Linie liegt (Aufwärtstrend) <i>und</i> einen Rücksetzer hat (RSI ≤ 40). Sonst «abwarten».</li>
+      <li><b>Marktumfeld:</b> Markt (Durchschnitt aller Titel) über oder unter seiner 200-Tage-Linie, nur zur Information auf der Übersicht. Er sperrt keine Einstiege.</li>
+      <li><b>Geprüft am 15.10.2026</b> (Einstieg_Backtest, 2003–2026, ca. 470 Titel, Zusatzertrag mit Regel gegenüber ohne Regel, Hold-out und Mehrfachtest): <b>keine Regel hat bestanden.</b> Am besten schnitt der Rücksetzer bei Stars ab (RSI ≤ 40): im Hold-out +1.2 % nach 1 Monat und +2.4 % nach 3 Monaten, auch in der Suchperiode positiv, aber nicht signifikant (p nach Korrektur 0.09 bzw. 0.14). «Stabilisiert» bei Einbrüchen brachte nur +0.2 bis +0.5 %. Nähe zur 50-Tage-Linie und Ausbruch brachten nichts und sind deshalb entfernt. Der Marktfilter hat die Rendite gesenkt (bei Cash statt Kauf entgehen Gewinne).</li>
+      <li>Fazit: Die Einstiegszone ist eine <b>Orientierung, kein belegtes Signal</b>. Der Rücksetzer im Aufwärtstrend ist die plausibelste Regel. Das Journal hält fest, wie sich Titel mit «ja» und «nein» tatsächlich entwickeln.</li>
       <li>Die Einstiegszone wird beim Vollscan berechnet und ändert sich zwischen zwei Scans nicht.</li>
     </ul></div>
 
@@ -251,7 +252,7 @@
       <p><b>Einbrüche bei Einzeltiteln (nicht belegt):</b> Nach Beta-Bereinigung blieb im Backtest wenig übrig (nur Woche −10 %, 6 Monate, +2.3 % im Hold-out; Survivorship Bias nicht ausgeschlossen). Ein Qualitätsfilter aus Kursdaten brachte keinen Vorteil.</p>
       <p><b>Stars, Kursteil (nicht belegt):</b> Der Test mit Kursdaten (2003–2026, ca. 470 Titel) bestand nicht. In der Suchperiode bis ca. 2019 lag der Mehrertrag bei allen Varianten unter null, im Hold-out war er bei längeren Horizonten positiv, aber nicht signifikant. Momentum hängt offenbar von der Marktphase ab.</p>
       <p><b>Unterbewertet / Wende (nicht belegt):</b> Günstige, gesunde Firmen (Value plus Qualität) haben historisch Mehrertrag gebracht, aber unregelmässig und mit vielen Fehlschlägen. Nebenwerte sind zusätzlich schwerer handelbar (grössere Kursspannen, weniger Umsatz). Mit den Gratis-Daten lässt sich das nicht rückwirkend testen (Kennzahlen und Jahresabschlüsse gibt es nur für den heutigen Stand). Das Journal sammelt den Beleg.</p>
-      <p><b>Einstiegsregeln (noch nicht geprüft):</b> Die Regeln der Einstiegszone sind testbar. Ergebnis von <code>Einstieg_Backtest.bat</code> wird nach dem ersten Lauf hier nachgetragen.</p>
+      <p><b>Einstiegsregeln (nicht belegt):</b> Im Backtest (15.10.2026) bestand keine Regel. Nur der Rücksetzer (RSI ≤ 40) bei Stars zeigte in Suche und Hold-out einen Zusatzertrag, jedoch nicht signifikant. Details unter «Einstiegszone».</p>
       <p><b>Wachstum, Gewinnschätzungen, Revisionen (nicht testbar):</b> Gibt es gratis nicht rückwirkend. Dafür sammelt das Journal den Beleg über die Zeit.</p>
       <p>Ampel, Score und Gesamtscore sind eine Checkliste, <b>kein Kaufsignal</b> und keine Anlageberatung.</p>
     </div>
@@ -468,7 +469,7 @@ function zeichneAmpelSumme() {
   const el = $("#ampelsumme");
   let h = "";
   const mo = D.markt_ok;
-  if (mo) h += `<div class="karte" style="border-color:${mo.ok ? "var(--pos)" : "var(--neg)"}"><div class="zeile"><span><b>Marktumfeld</b> <span class="dim klein">Filter für Einstiege</span></span><span class="pille" style="color:${mo.ok ? "var(--pos)" : "var(--neg)"}">${mo.ok ? "günstig" : "schwach"}</span></div><div class="dim klein" style="margin-top:4px">${esc(mo.text)}</div></div>`;
+  if (mo) h += `<div class="karte" style="border-color:${mo.ok ? "var(--pos)" : "var(--neg)"}"><div class="zeile"><span><b>Marktumfeld</b> <span class="dim klein">zur Information</span></span><span class="pille" style="color:${mo.ok ? "var(--pos)" : "var(--neg)"}">${mo.ok ? "über 200-Tage-Linie" : "unter 200-Tage-Linie"}</span></div><div class="dim klein" style="margin-top:4px">${esc(mo.text)}</div></div>`;
   // Gesamtranking aus allen Kategorien, je Titel mit Einstiegszeitpunkt
   const rk = liste("alle").filter(x => x.ampel !== "rot").slice(0, 10);
   if (rk.length) h += `<div class="karte"><div class="zeile"><span><b>Gesamtranking</b> <span class="dim klein">alle Kategorien, ein Massstab</span></span></div><div style="margin-top:4px">${rk.map((x, i) =>
