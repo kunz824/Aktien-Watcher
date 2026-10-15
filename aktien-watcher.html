@@ -105,11 +105,6 @@
 <div id="seite"><main>
   <div class="kopf">
     <div style="display:flex;align-items:center;gap:10px"><img src="icon-192.png" alt="" width="34" height="34" style="border-radius:8px;flex:none"><div><h1>Aktien-Watcher</h1><div class="dim klein" id="stand">lädt …</div></div></div>
-    <div style="display:flex;gap:6px">
-      <button class="knopf sek" id="btnDepot" title="Holt frische Kurse vom PC (Sync auf Abruf)">↻ Neu laden</button>
-      <button class="knopf sek" id="btnVoll">↻ Vollscan</button>
-      <button class="knopf sek" id="btnEinst" title="Einstellungen">⚙</button>
-    </div>
   </div>
   <div id="banner"></div>
 
@@ -141,6 +136,16 @@
 
   <!-- Info -->
   <section class="register info" id="r-info">
+    <h2 style="margin-top:4px">Einstellungen</h2>
+    <div class="karte">
+      <div class="aktionen" style="margin:0 0 8px">
+        <button class="knopf sek" id="btnDepot">↻ Neu laden</button>
+        <button class="knopf sek" id="btnVoll">↻ Vollscan</button>
+        <button class="knopf sek" id="btnEinst">⚙ Verbindung</button>
+      </div>
+      <div class="dim klein"><b>Neu laden</b> holt frische Kurse vom PC (Sync auf Abruf, dauert ein bis zwei Minuten). <b>Vollscan</b> sucht alle Listen neu und dauert einige Minuten (nur im lokalen Betrieb). <b>Verbindung</b> öffnet Bin-ID und Zugriffsschlüssel der Web-App.</div>
+    </div>
+
     <h2>Worum geht es?</h2>
     <div class="karte">
       <p>Der Aktien-Watcher durchsucht rund 650 Titel (SMI, DAX, MDAX, S&amp;P 500, Nasdaq 100) und zusätzlich Nebenwerte (SDAX, S&amp;P 600, nur für die Liste «Unterbewertet») und zeigt dir die, die einen genaueren Blick lohnen. Er kauft nichts und gibt <b>keine Kaufsignale</b>. Er ist eine strukturierte Checkliste mit Ranking.</p>
@@ -154,7 +159,7 @@
       <tr><td><b>Dashboard</b></td><td style="text-align:left">Dein Konto und Depot in Kacheln, Wertentwicklung, Verteilung, Gewinn je Position und die Bewertung der Positionen.</td></tr>
       <tr><td><b>Kandidaten</b></td><td style="text-align:left">Oben die Liste wählen: «Alle» = ein gemeinsames Ranking (Gesamtscore), daneben die vier Einzellisten (Einbrüche, Stars, Wachstum, Unterbewertet). Darunter Sortierung, Ampel, Index und «Nur Einstiegszone». Antippen eines Titels öffnet Einstiegszone, Kriterien und Schlagzeilen. «+ Ins Depot legen» übernimmt den Titel ins Depot.</td></tr>
       <tr><td><b>Depot</b></td><td style="text-align:left">Deine Positionen mit Bewertung und Alarmen, Kontobewegungen, «Einzahlungen ändern», Export und Import. Neue Positionen legst du unter «Kandidaten» mit «+ Ins Depot legen» an.</td></tr>
-      <tr><td><b>Info</b></td><td style="text-align:left">Diese Erklärung und das Journal (Hat der Score etwas gebracht?).</td></tr>
+      <tr><td><b>Einstellungen</b></td><td style="text-align:left">Neu laden, Vollscan und Verbindung, danach diese Erklärung und das Journal (Hat der Score etwas gebracht?).</td></tr>
     </table></div>
 
     <h2>Die vier Listen</h2>
@@ -269,7 +274,7 @@
   <button data-r="dashboard"><span class="ic">📈</span>Dashboard</button>
   <button data-r="kandidaten"><span class="ic">🚦</span>Kandidaten</button>
   <button data-r="depot"><span class="ic">💼</span>Depot</button>
-  <button data-r="info"><span class="ic">ℹ️</span>Info</button>
+  <button data-r="info"><span class="ic">⚙️</span>Einstellungen</button>
 </nav>
 
 <dialog id="dlgPos">
@@ -541,7 +546,7 @@ function zeichneKandidaten() {
       <div class="details">
         <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc((x.indizes && x.indizes.length ? x.indizes.join(", ") : x.markt))} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}${x.rs_pct != null ? " · 6 Monate " + pc(x.rs_pct) : ""}</div>
         ${kursChart(x.verlauf)}
-        ${x.ez_t ? `<div style="margin:8px 0;padding:8px 10px;border-radius:10px;border:1px solid ${x.ez ? "var(--pos)" : "var(--border)"};font-size:13px"><b>Einstiegszone: ${x.ez ? "ja" : "abwarten"}</b> · ${esc(x.ez_t)}${D.markt_ok ? `<div class="dim klein" style="margin-top:3px">${esc(D.markt_ok.text)}</div>` : ""}<div class="dim klein" style="margin-top:3px">Regel aus Kursdaten, noch nicht belegt (siehe Info). Kein Kaufsignal.</div></div>` : ""}
+        ${x.ez_t ? `<div style="margin:8px 0;padding:8px 10px;border-radius:10px;border:1px solid ${x.ez ? "var(--pos)" : "var(--border)"};font-size:13px"><b>Einstiegszone: ${x.ez ? "ja" : "abwarten"}</b> · ${esc(x.ez_t)}${D.markt_ok ? `<div class="dim klein" style="margin-top:3px">${esc(D.markt_ok.text)}</div>` : ""}<div class="dim klein" style="margin-top:3px">Regel aus Kursdaten, noch nicht belegt (siehe Einstellungen). Kein Kaufsignal.</div></div>` : ""}
         ${(fTyp === "einbruch" || (fTyp === "alle" && (x.typen || []).includes("Einbruch"))) ? ursachenBlock(x) : ""}
         ${kr}
         ${nw ? '<h2 style="margin:14px 0 4px;font-size:13px">Schlagzeilen</h2><div class="news">' + nw + '</div>' : ''}
