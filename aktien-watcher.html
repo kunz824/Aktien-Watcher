@@ -53,6 +53,11 @@
   .chip.aktiv { background: #5a6272; color: #fff; border-color: #5a6272; }
   .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 6px; background: #222a38; color: var(--text-dim); margin: 2px 4px 0 0; }
   .titel-zeile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .titel-zeile .rechts { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; }
+  .kachel { width: 92px; font-size: 10px; line-height: 1.3; padding: 5px 7px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); overflow: hidden; }
+  .kachel div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kachel b { color: var(--text); font-weight: 500; }
+  table.spiegel { width: 100%; font-size: 12.5px; border-collapse: collapse; } table.spiegel td { padding: 3px 0; border-bottom: 1px solid var(--border); }
   .titel-zeile .mitte { flex: 1; min-width: 0; }
   .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .zahlen { display: flex; gap: 12px; font-size: 12px; margin-top: 4px; flex-wrap: wrap; }
@@ -225,6 +230,13 @@
       <li><b>Geprüft am 15.10.2026</b> (Einstieg_Backtest, 2003–2026, ca. 470 Titel, Zusatzertrag mit Regel gegenüber ohne Regel, Hold-out und Mehrfachtest): <b>keine Regel hat bestanden.</b> Am besten schnitt der Rücksetzer bei Stars ab (RSI ≤ 40): im Hold-out +1.2 % nach 1 Monat und +2.4 % nach 3 Monaten, auch in der Suchperiode positiv, aber nicht signifikant (p nach Korrektur 0.09 bzw. 0.14). «Stabilisiert» bei Einbrüchen brachte nur +0.2 bis +0.5 %. Nähe zur 50-Tage-Linie und Ausbruch brachten nichts und sind deshalb entfernt. Der Marktfilter hat die Rendite gesenkt (bei Cash statt Kauf entgehen Gewinne).</li>
       <li>Fazit: Die Einstiegszone ist eine <b>Orientierung, kein belegtes Signal</b>. Der Rücksetzer im Aufwärtstrend ist die plausibelste Regel. Das Journal hält fest, wie sich Titel mit «ja» und «nein» tatsächlich entwickeln.</li>
       <li>Die Einstiegszone wird beim Vollscan berechnet und ändert sich zwischen zwei Scans nicht.</li>
+    </ul></div>
+
+    <h2>Titel-Kachel und Unternehmensspiegel</h2>
+    <div class="karte"><ul>
+      <li>Bei jedem Titel unter «Kandidaten» zeigt die Kachel oben rechts Branche, Mitarbeiterzahl, Umsatz und Gewinnmarge. Aufgeklappt folgt der «Unternehmensspiegel»: Kurzbeschreibung der Produkte (erste Sätze der Yahoo-Beschreibung, englisch), Land, Umsatzwachstum, Brutto- und Gewinnmarge, Free Cashflow, Börsenwert und Schulden im Verhältnis zum Eigenkapital.</li>
+      <li>Alle Angaben stammen von Yahoo Finance und werden nur gezeigt, wenn sie vorliegen (sonst fehlt die Zeile). Beträge in der Berichtswährung von Yahoo, ohne Umrechnung. Daten können Lücken oder Fehler haben.</li>
+      <li>Die Werte kommen mit dem nächsten Vollscan (Yahoo-Daten werden 20 Stunden zwischengespeichert). Reine Information, sie fliessen nicht in den Score ein.</li>
     </ul></div>
 
     <h2>Stop-Loss</h2>
@@ -525,6 +537,21 @@ function ursachenBlock(x) {
     + '<div class="dim klein" style="margin:4px 0 8px">Automatische Stichwort-Zuordnung (Yahoo Finance + Google News), keine inhaltliche Zusammenfassung. Meldungen selbst lesen.</div>';
 }
 
+/* ---- Titel-Kachel / Unternehmensspiegel (Yahoo Finance, nur vorhandene Werte) ---- */
+function gross(v) { if (v == null) return "–"; const a = Math.abs(v); return a >= 1e12 ? (v / 1e12).toFixed(1) + " Bio." : a >= 1e9 ? (v / 1e9).toFixed(a >= 1e10 ? 0 : 1) + " Mrd." : a >= 1e6 ? (v / 1e6).toFixed(0) + " Mio." : String(Math.round(v)); }
+function anz(v) { return v == null ? "–" : Math.round(v).toLocaleString("de-CH"); }
+function kachel(x) {
+  const f = x.firma; if (!f) return "";
+  const z = [f.branche ? `<b>${esc(f.branche)}</b>` : "", f.mitarbeiter != null ? `${anz(f.mitarbeiter)} MA` : "", f.umsatz != null ? `Ums. ${gross(f.umsatz)}` : "", f.marge != null ? `Marge ${num(f.marge, 1)} %` : ""].filter(Boolean);
+  return z.length ? `<div class="kachel">${z.map(t => `<div>${t}</div>`).join("")}</div>` : "";
+}
+function firmaBlock(x) {
+  const f = x.firma; if (!f) return '<div class="dim klein" style="margin:8px 0">Unternehmensspiegel: keine Daten (folgt beim nächsten Vollscan).</div>';
+  const r = (t, v) => v == null || v === "" ? "" : `<tr><td class="dim">${t}</td><td style="text-align:right">${v}</td></tr>`;
+  return `<h2 style="margin:12px 0 6px;font-size:13px">Unternehmensspiegel</h2>${f.produkte ? `<div class="klein" style="margin-bottom:6px">${esc(f.produkte)} <span class="dim">(Yahoo, englisch)</span></div>` : ""}
+    <table class="spiegel">${r("Branche", esc(f.branche || ""))}${r("Land", esc(f.land || ""))}${r("Mitarbeiter", f.mitarbeiter != null ? anz(f.mitarbeiter) : null)}${r("Umsatz", f.umsatz != null ? gross(f.umsatz) : null)}${r("Umsatzwachstum", f.wachstum != null ? pc(f.wachstum) : null)}${r("Bruttomarge", f.bruttomarge != null ? num(f.bruttomarge, 1) + " %" : null)}${r("Gewinnmarge", f.marge != null ? num(f.marge, 1) + " %" : null)}${r("Free Cashflow", f.fcf != null ? gross(f.fcf) : null)}${r("Börsenwert", f.marktkap != null ? gross(f.marktkap) : null)}${r("Schulden / Eigenkapital", f.schulden_ek != null ? num(f.schulden_ek, 2) : null)}</table>`;
+}
+
 function zeichneKandidaten() {
   const T = TYP_INFO[fTyp], L = liste(fTyp);
   $("#filterTyp").innerHTML = Object.keys(TYP_INFO).map(t => `<button class="chip ${fTyp === t ? "aktiv" : ""}" data-typ="${t}">${TYP_INFO[t].name} (${liste(t).length})</button>`).join("");
@@ -553,10 +580,11 @@ function zeichneKandidaten() {
           <div class="zahlen"><span>${num(x.kurs)} ${esc(x.waehrung)}</span><span class="${kl(x.tag_pct)}">Tag ${pc(x.tag_pct)}</span><span class="${kl(x.woche_pct)}">Woche ${pc(x.woche_pct)}</span><span class="${kl(x.monat_pct)}">Monat ${pc(x.monat_pct)}</span></div>
           <div class="zahlen" style="margin-top:3px"><span><b style="color:${scoreFarbe(x.score)}">${fTyp === "alle" ? "Gesamtscore" : "Score"} ${x.score ?? "–"}</b></span>${fTyp === "alle" && x.eigene ? '<span class="dim">' + Object.entries(x.eigene).map(([t, v]) => TYP_INFO[t].kurz + " " + v).join(" · ") + '</span>' : ''}<span>${x.erfuellt ?? "–"} von ${x.bewertbar ?? "–"} Kriterien erfüllt</span></div>${scoreBalken(x.score)}
           <div style="margin-top:4px">${(x.ausloeser || []).map(a => `<span class="tag">${esc(a.trigger)}${a.vor_tagen != null ? " · vor " + a.vor_tagen + " Tg" : ""}</span>`).join("")}${(x.typen || []).map(t => `<span class="tag" style="color:var(--accent)">${esc(t)}</span>`).join("")}${x.ez != null ? (x.ez ? '<span class="tag" style="color:var(--pos)">Einstieg: ja</span>' : '<span class="tag">Einstieg: abwarten</span>') : ''}${imDepot ? '<span class="tag" style="color:var(--accent)">im Depot</span>' : ''}${x.ruecksetzer ? '<span class="tag" style="color:var(--warn)">im Rücksetzer</span>' : ''}${(x.auch_in || []).map(a => `<span class="tag" style="color:var(--accent)">auch: ${esc(a)}</span>`).join("")}${(x.ursachen || []).slice(0, 2).map(u => `<span class="tag" style="color:var(--warn)">⚑ ${esc(u.thema)}</span>`).join("")}</div></div>
-        ${spark(x.verlauf)}</div>
+        <div class="rechts">${kachel(x)}${spark(x.verlauf)}</div></div>
       <div class="details">
         <div class="dim klein" style="margin-bottom:6px">${esc(x.ampel === "gruen" ? "Grün" : x.ampel === "rot" ? "Rot" : "Gelb")}: ${esc(x.punkte)} · ${esc(x.sektor || "")} · ${esc((x.indizes && x.indizes.length ? x.indizes.join(", ") : x.markt))} · vom 52-W-Hoch ${pc(x.vom_hoch_pct)}${x.rs_pct != null ? " · 6 Monate " + pc(x.rs_pct) : ""}</div>
         ${kursChart(x.verlauf)}
+        ${firmaBlock(x)}
         ${x.ez_t ? `<div style="margin:8px 0;padding:8px 10px;border-radius:10px;border:1px solid ${x.ez ? "var(--pos)" : "var(--border)"};font-size:13px"><b>Einstiegszone: ${x.ez ? "ja" : "abwarten"}</b> · ${esc(x.ez_t)}${D.markt_ok ? `<div class="dim klein" style="margin-top:3px">${esc(D.markt_ok.text)}</div>` : ""}<div class="dim klein" style="margin-top:3px">Regel aus Kursdaten, noch nicht belegt (siehe Einstellungen). Kein Kaufsignal.</div></div>` : ""}
         ${(fTyp === "einbruch" || (fTyp === "alle" && (x.typen || []).includes("Einbruch"))) ? ursachenBlock(x) : ""}
         ${kr}
