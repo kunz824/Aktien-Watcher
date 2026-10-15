@@ -54,9 +54,9 @@
   .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 6px; background: #222a38; color: var(--text-dim); margin: 2px 4px 0 0; }
   .titel-zeile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .titel-zeile .rechts { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; }
-  .kachel { width: 92px; font-size: 10px; line-height: 1.3; padding: 5px 7px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); overflow: hidden; }
-  .kachel div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .kachel b { color: var(--text); font-weight: 500; }
+  .firmakachel { width: 92px; font-size: 10px; line-height: 1.3; padding: 5px 7px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-dim); overflow: hidden; }
+  .firmakachel div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .firmakachel b { color: var(--text); font-weight: 500; }
   table.spiegel { width: 100%; font-size: 12.5px; border-collapse: collapse; } table.spiegel td { padding: 3px 0; border-bottom: 1px solid var(--border); }
   .titel-zeile .mitte { flex: 1; min-width: 0; }
   .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -234,7 +234,7 @@
 
     <h2>Titel-Kachel und Unternehmensspiegel</h2>
     <div class="karte"><ul>
-      <li>Bei jedem Titel unter «Kandidaten» zeigt die Kachel oben rechts Branche, Mitarbeiterzahl, Umsatz und Gewinnmarge. Aufgeklappt folgt der «Unternehmensspiegel»: Kurzbeschreibung der Produkte (erste Sätze der Yahoo-Beschreibung, englisch), Land, Umsatzwachstum, Brutto- und Gewinnmarge, Free Cashflow, Börsenwert und Schulden im Verhältnis zum Eigenkapital.</li>
+      <li>Bei jedem Titel unter «Kandidaten» und im «Depot» zeigt die Kachel oben rechts Branche, Mitarbeiterzahl, Umsatz und Gewinnmarge. Aufgeklappt folgt der «Unternehmensspiegel»: Kurzbeschreibung der Produkte (erste Sätze der Yahoo-Beschreibung, englisch), Land, Umsatzwachstum, Brutto- und Gewinnmarge, Free Cashflow, Börsenwert und Schulden im Verhältnis zum Eigenkapital.</li>
       <li>Alle Angaben stammen von Yahoo Finance und werden nur gezeigt, wenn sie vorliegen (sonst fehlt die Zeile). Beträge in der Berichtswährung von Yahoo, ohne Umrechnung. Daten können Lücken oder Fehler haben.</li>
       <li>Die Werte kommen mit dem nächsten Vollscan (Yahoo-Daten werden 20 Stunden zwischengespeichert). Reine Information, sie fliessen nicht in den Score ein.</li>
     </ul></div>
@@ -543,7 +543,7 @@ function anz(v) { return v == null ? "–" : Math.round(v).toLocaleString("de-CH
 function kachel(x) {
   const f = x.firma; if (!f) return "";
   const z = [f.branche ? `<b>${esc(f.branche)}</b>` : "", f.mitarbeiter != null ? `${anz(f.mitarbeiter)} MA` : "", f.umsatz != null ? `Ums. ${gross(f.umsatz)}` : "", f.marge != null ? `Marge ${num(f.marge, 1)} %` : ""].filter(Boolean);
-  return z.length ? `<div class="kachel">${z.map(t => `<div>${t}</div>`).join("")}</div>` : "";
+  return z.length ? `<div class="firmakachel">${z.map(t => `<div>${t}</div>`).join("")}</div>` : "";
 }
 function firmaBlock(x) {
   const f = x.firma; if (!f) return '<div class="dim klein" style="margin:8px 0">Unternehmensspiegel: keine Daten (folgt beim nächsten Vollscan).</div>';
@@ -649,7 +649,7 @@ function zeichneDepot() {
   $("#konto").innerHTML = `<div class="dim klein" style="margin-bottom:10px">Kontostand = Einzahlungen − Einstand Depot (Kontostand und Depotwert werden nicht addiert). Alle Beträge in CHF umgerechnet${k.fx ? " (USD " + k.fx.USD + ", EUR " + k.fx.EUR + ")" : ""}.</div>${buchungenKarte()}`;
   if (!pos.length) { $("#positionen").innerHTML = '<div class="leer">Noch keine Positionen. Unter «Kandidaten» einen Titel antippen und «+ Ins Depot legen».</div>'; return; }
   $("#positionen").innerHTML = pos.map(p => {
-    const kand = alleKand().find(x => x.ticker === p.ticker);
+    const kand = alleKand().find(x => x.ticker === p.ticker), firma = p.firma || (kand && kand.firma) || null;
     return `<div class="karte"><div class="titel-zeile" style="cursor:default"><div class="mitte">
       <div class="name">${kand ? `<span class="punkt ${esc(kand.ampel)}"></span> ` : ""}${esc(p.ticker)} <span class="dim" style="font-weight:400">${esc(p.name)}</span></div>
       <div class="zahlen"><span>${num(p.stueck, p.stueck % 1 ? 2 : 0)} Stk.</span><span>Einstand ${num(p.einstand)}</span><span>Kurs ${num(p.kurs)} ${esc(p.waehrung)}</span></div>
@@ -659,8 +659,9 @@ function zeichneDepot() {
       ${p.sl ? `<div class="zahlen dim"><span>Stop-Loss ${num(p.sl)} (−${num(p.sl_pct, 1)} %)</span>${p.kurs ? `<span>Abstand ${num((p.kurs / p.sl - 1) * 100, 1)} %</span>` : ""}<span>Risiko ${chf(p.stueck * Math.max(0, p.einstand - p.sl) * fxw(p.waehrung || "CHF"))}</span></div>` : `<div class="zahlen dim"><span>Kein Stop-Loss gesetzt (Bearbeiten)</span></div>`}
       ${(p.alarme || []).map(a => `<div class="alarm ${esc(a.stufe)}">⚠ ${esc(a.text)}</div>`).join("")}
       ${p.notiz ? `<div class="dim klein" style="margin-top:4px">📝 ${esc(p.notiz)}</div>` : ""}
-      <div class="dim klein">seit ${esc(p.datum || "–")}</div></div>${spark(p.verlauf)}</div>
+      <div class="dim klein">seit ${esc(p.datum || "–")}</div></div><div class="rechts">${kachel({firma})}${spark(p.verlauf)}</div></div>
       ${kursChart(p.verlauf, p.einstand)}
+      <div class="bewkopf" style="margin-top:8px"><div class="zeile"><span><b>Unternehmensspiegel</b></span><span class="dim klein">Details ▾</span></div></div><div class="details" style="display:none;margin-top:0;border-top:none">${firmaBlock({firma}).replace(/<h2[^>]*>Unternehmensspiegel<\/h2>/,"")}</div>
       ${bewertungBlock(p)}
       <div class="aktionen"><button class="knopf sek" data-edit="${esc(p.ticker)}">Bearbeiten</button><button class="knopf gefahr" data-del="${esc(p.ticker)}">Verkauft / entfernen</button></div></div>`;
   }).join("");
